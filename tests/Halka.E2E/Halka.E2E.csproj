@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Halka.E2E</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="Microsoft.Playwright" />
+    <PackageReference Include="Deque.AxeCore.Playwright" />
+    <PackageReference Include="Otp.NET" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Halka.TestKit\Halka.TestKit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="Halka.TestKit" />
+    <Using Include="Microsoft.Playwright" />
+  </ItemGroup>
+</Project>

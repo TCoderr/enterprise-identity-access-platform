@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Halka.Migrator</RootNamespace>
+    <AssemblyName>Halka.Migrator</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Halka.Iam\Halka.Iam.csproj" />
+    <ProjectReference Include="..\Halka.DemoClient\Halka.DemoClient.csproj" />
+  </ItemGroup>
+</Project>

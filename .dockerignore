@@ -1,0 +1,16 @@
+**/bin
+**/obj
+**/node_modules
+**/TestResults
+.git
+.local
+.local-*
+.env
+.env.*
+artifacts
+docs
+design
+tests
+*.pfx
+*.key
+*.pem

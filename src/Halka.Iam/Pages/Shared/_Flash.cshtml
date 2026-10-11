@@ -1,0 +1,9 @@
+@model (string? Notice, string? Error)
+@if (Model.Notice is not null)
+{
+    <div class="alert alert--success" role="status"><p>@Model.Notice</p></div>
+}
+@if (Model.Error is not null)
+{
+    <div class="alert alert--error" role="alert"><p>@Model.Error</p></div>
+}

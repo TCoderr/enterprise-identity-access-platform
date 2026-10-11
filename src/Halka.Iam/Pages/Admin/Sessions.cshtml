@@ -1,0 +1,55 @@
+@page "/admin/sessions"
+@model SessionsModel
+@{
+    ViewData["Title"] = "Sessions";
+    ViewData["Nav"] = "admin";
+    ViewData["Side"] = "sessions";
+}
+<div class="with-sidebar">
+    <partial name="_AdminNav" />
+    <div>
+        <h1>Sessions</h1>
+        <p>Active central sessions of all accounts (most recent 200). Ending a session revokes the grants and tokens issued from it.</p>
+        <partial name="_Flash" model="(Model.Notice, (string?)null)" />
+        @if (Model.Items.Count == 0)
+        {
+            <p class="empty">No active session.</p>
+        }
+        else
+        {
+            <div class="table-wrap">
+                <table class="data">
+                    <caption>Active sessions</caption>
+                    <thead>
+                    <tr>
+                        <th scope="col">Account</th>
+                        <th scope="col">Device</th>
+                        <th scope="col">Signed in</th>
+                        <th scope="col">Last active</th>
+                        <th scope="col">Methods</th>
+                        <th scope="col"><span class="visually-hidden">Actions</span></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td data-label="Account"><a asp-page="/Admin/UserDetail" asp-route-id="@item.UserId">@item.Email</a></td>
+                            <td data-label="Device">@item.ClientLabel</td>
+                            <td data-label="Signed in"><time datetime="@item.AuthTime.ToString("O")">@item.AuthTime.ToString("yyyy-MM-dd HH:mm") UTC</time></td>
+                            <td data-label="Last active"><time datetime="@item.LastSeenAt.ToString("O")">@item.LastSeenAt.ToString("yyyy-MM-dd HH:mm") UTC</time></td>
+                            <td data-label="Methods">@item.Amr</td>
+                            <td>
+                                <form method="post" asp-page-handler="Revoke" class="inline-form">
+                                    <input type="hidden" name="id" value="@item.Id">
+                                    <button type="submit" class="button button--secondary button--small">End session<span class="visually-hidden"> of @item.Email on @item.ClientLabel</span></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

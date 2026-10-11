@@ -1,0 +1,77 @@
+@page "/manage/mfa"
+@model MfaModel
+@{
+    ViewData["Title"] = "Two-step sign-in";
+    ViewData["Nav"] = "account";
+    ViewData["Side"] = "mfa";
+}
+<div class="with-sidebar">
+    <partial name="_ManageNav" />
+    <div>
+        <h1>Two-step sign-in</h1>
+        @if (Model.RequiredForAdministration)
+        {
+            <div class="alert alert--warning" role="alert">
+                <p><strong>Administrators must use two-step sign-in.</strong> Set up an authenticator app to open the administration area.</p>
+            </div>
+        }
+        @if (Model.Notice is not null)
+        {
+            <div class="alert alert--success" role="status"><p>@Model.Notice</p></div>
+        }
+        @if (Model.NewCodes.Count > 0)
+        {
+            <section class="panel" aria-labelledby="codes-heading">
+                <h2 class="panel__title" id="codes-heading">New recovery codes</h2>
+                <div class="alert alert--warning" role="alert">
+                    <p>Save these codes now. They are shown only this once, and your previous codes no longer work.</p>
+                </div>
+                <ul class="code-list" id="recovery-codes" data-testid="recovery-codes">
+                    @foreach (var code in Model.NewCodes)
+                    {
+                        <li>@code</li>
+                    }
+                </ul>
+                <div class="cluster no-print">
+                    <button type="button" class="button button--secondary" data-copy-from="recovery-codes" data-copy-status="copy-status" hidden>Copy codes</button>
+                    <button type="button" class="button button--secondary" data-print hidden>Print</button>
+                    <span id="copy-status" role="status" class="muted"></span>
+                </div>
+            </section>
+        }
+        <section class="panel" aria-labelledby="status-heading">
+            <h2 class="panel__title" id="status-heading">Authenticator app</h2>
+            @if (Model.Enabled)
+            {
+                <p><span class="badge badge--ok">On</span> You are asked for a code from your authenticator app each time you sign in.</p>
+                <dl class="facts">
+                    <dt>Unused recovery codes</dt>
+                    <dd>@Model.RemainingCodes</dd>
+                </dl>
+                <form method="post" asp-page-handler="Regenerate">
+                    <p>Generating new codes invalidates all existing ones. You will be asked to confirm with your authenticator first.</p>
+                    <button type="submit" class="button button--secondary">Generate new recovery codes</button>
+                </form>
+            }
+            else
+            {
+                <p><span class="badge badge--warn">Off</span> Your account is protected by your password only.</p>
+                <a class="button" href="/manage/mfa/enroll">Set up an authenticator app</a>
+            }
+        </section>
+        @if (Model.Enabled)
+        {
+            <section class="panel" aria-labelledby="remove-heading">
+                <h2 class="panel__title" id="remove-heading">Turn off two-step sign-in</h2>
+                <p>Removes the authenticator and all recovery codes, and signs out your other sessions. You will be asked to confirm with your authenticator first.</p>
+                <form method="post" asp-page-handler="Remove">
+                    <label class="check">
+                        <input type="checkbox" name="confirm" value="true" required>
+                        <span>I understand that my account will be protected by the password only.</span>
+                    </label>
+                    <button type="submit" class="button button--danger">Turn off two-step sign-in</button>
+                </form>
+            </section>
+        }
+    </div>
+</div>

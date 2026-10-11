@@ -1,0 +1,74 @@
+Halka ID - verification summary (masked; contains no credential, token or secret value)
+Date: 2026-10-11
+Source fingerprint: sha256:15015539afab3692006971ed65611ddfaefc93154ce5320822f69e1e007e12c9 files=248
+  taken before and after the runs below: identical. No source or script file was changed during verification.
+
+STATUS (RECORD A): every local gate passed on this fingerprint. Remote CI was not run.
+The current source is a later state (RECORD B at the end of this file): two cosmetic fixes, targeted checks only.
+
+How the results were collected (not one verify.ps1 invocation)
+  04:13  scripts/verify.ps1 completed restore, build, Unit and Integration, then was stopped by the working
+         environment during the browser gate because the system was critically low on memory.
+  09:43  the remaining gates were run one at a time with the same commands verify.ps1 uses, free memory measured
+         before each heavy step. Restore and build were run again. Unit and Integration were not run a second
+         time (free memory after the smoke run was below the 1800 MB guard); their 04:13 results are for the
+         same fingerprint.
+
+Gate                          time   exit  result
+  restore (locked)            09:43  0
+  build (Release)             09:43  0     0 Warning(s) 0 Error(s)
+  tests: Unit                 04:13  0     total=62  passed=62  failed=0 skipped=0
+  tests: Integration          04:14  0     total=175 passed=175 failed=0 skipped=0   (Testcontainers PostgreSQL 17)
+  UI tooling (npm run check)  09:43  0     typecheck ok, lint ok, script tests total=4 passed=4 failed=0 skipped=0
+  publish check               09:44  0     6 applications published; EF Core 10.0.12 in the 4 data-access apps;
+                                           local output only, deleted afterwards, nothing deployed
+  tests: E2E by class         09:44  0     Sso 3/3, MfaAndAdmin 3/3, RevocationAndLifecycle 4/4, Accessibility 3/3
+  tests: E2E full suite       09:47  0     total=13  passed=13  failed=0 skipped=0   (installed Chrome, headless)
+  smoke (Compose)             09:49  0     up:8/8 restarted:3/3 db-down:2/2 db-recovered:1/1 op-down:1/1
+                                           op-recovered:1/1 (16/16); disposable project, volume, private
+                                           directory and 6 images removed
+  scan (online)               09:53  0     ok=14 fail=0 skip=0 (NuGet: none, npm: none)
+  remote CI                   -      not run (no push was authorised; a local run is not a remote CI result)
+
+Memory (16 GB machine, neighbour containers and the user's browser left untouched)
+  lowest free physical memory: browser tests 1.7 GB, smoke image build 0.4 GB, after smoke 1.0-1.4 GB
+
+Screenshots: 88 regenerated under artifacts/verification/screenshots. The authenticator set-up screens have the
+QR code and the set-up key masked (checked by eye). No screen showing recovery codes or a new client secret is
+captured. Pattern search over artifacts/verification for bearer values, client_secret, passwords, otpauth URIs
+and private keys: no match.
+
+Not run: remote CI, OpenID Foundation conformance suite, load / multi-instance tests, manual screen reader test,
+penetration test, local-stack.sh on Linux / macOS, verify.ps1 end to end in one invocation (memory).
+
+Details: docs/final-verification.md
+
+==========================================================================================================
+RECORD B - two cosmetic fixes (2026-10-11 14:25-14:38). Everything above is RECORD A and stays valid only for
+fingerprint sha256:15015539... ; nothing above was re-run for the fingerprint below unless listed here.
+
+Source fingerprint (current): sha256:47adc621657715d0d0a98ecad97e0a86f416a65a208a90a8f4a56e13a135573d files=248
+Changed files: src/Halka.Iam/wwwroot/site.css (caption of a stacked table is a block),
+               tests/Halka.E2E/AccessibilityAndLayoutTests.cs (caption width assertion; note added before the
+               Pano workspace check), scripts/verify.ps1 (Get-GateLogName, case-sensitive replace)
+
+Check                                         exit  result
+  negative control (assertion, no CSS fix)    2     expected failure: squeezed caption at 360 px (intermediate state)
+  tests: E2E AccessibilityAndLayoutTests      0     total=3  passed=3  failed=0 skipped=0
+  tests: E2E full suite                       0     total=13 passed=13 failed=0 skipped=0
+  build (Release)                             0     0 Warning(s) 0 Error(s)
+  UI tooling (npm run check)                  0     script tests total=4 passed=4 failed=0 skipped=0
+  tests: Integration UiRenderTests            0     total=3  passed=3  failed=0 skipped=0
+  tests: Integration stylesheet + headers     0     total=1  passed=1  failed=0 skipped=0
+  gate log names, culture tr-TR               0     9 of 9 names correct (old expression: 2 wrong)
+  gate log names, culture en-US               0     9 of 9 names correct (old expression: 0 wrong)
+  Invoke-Gate with stub gates                 0     5 of 5 checks (file name, content, exit 0, exit 3, order)
+  scan (online)                               0     ok=14 fail=0 skip=0
+
+Not re-run on this fingerprint (backend and protocol sources unchanged): Unit 62, full Integration 175, Compose
+smoke 16, publish check, verify.ps1 as a whole. Remote CI: not run.
+Screenshots: 88 regenerated on this fingerprint; pano-workspace at 360/768/1440 checked by eye; authenticator
+set-up key and QR code masked. Pattern search for secrets under artifacts/verification: no match.
+Lowest free physical memory: 0.35 GB (build + layout tests), 0.8 GB (full browser suite).
+The repository has no PowerShell script test suite; the two check scripts are kept next to the raw logs
+(artifacts/verification/raw/check-*.ps1) and use the real functions parsed from scripts/verify.ps1.

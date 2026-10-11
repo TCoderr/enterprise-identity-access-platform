@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Halka.LocalInit</RootNamespace>
+    <AssemblyName>Halka.LocalInit</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Halka.Migrator\Halka.Migrator.csproj" />
+  </ItemGroup>
+</Project>

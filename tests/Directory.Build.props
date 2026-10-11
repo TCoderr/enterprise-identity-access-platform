@@ -1,0 +1,9 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  <PropertyGroup>
+    <!-- xUnit1051: tests use short, bounded operations; passing the test cancellation token everywhere adds noise only. -->
+    <NoWarn>$(NoWarn);xUnit1051</NoWarn>
+    <!-- Test executables speak the Microsoft Testing Platform protocol and CLI (dotnet test and direct runs). -->
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,25 @@
+@page "/account/mfa"
+@model MfaModel
+@{
+    ViewData["Title"] = "Enter your code";
+    ViewData["Width"] = "page--narrow";
+}
+<h1>Enter your code</h1>
+<p>Open your authenticator app and enter the 6-digit code for Halka ID.</p>
+@if (Model.ErrorMessage is not null)
+{
+    <div class="alert alert--error" role="alert" id="mfa-error"><p>@Model.ErrorMessage</p></div>
+}
+<form method="post" asp-page="/Account/Mfa" asp-route-returnUrl="@Model.ReturnUrl" class="panel" novalidate>
+    <div class="field">
+        <label asp-for="Code">Authentication code</label>
+        <span class="field__hint" id="code-hint">Six digits. You can paste the code; spaces are ignored.</span>
+        <input asp-for="Code" type="text" class="input--code" inputmode="numeric" autocomplete="one-time-code" maxlength="9" required autofocus
+               data-code="totp" aria-describedby="code-hint @(Model.ErrorMessage is null ? null : "mfa-error")">
+    </div>
+    <button type="submit" class="button button--block">Verify</button>
+</form>
+<p class="cluster">
+    <a asp-page="/Account/Recovery" asp-route-returnUrl="@Model.ReturnUrl">Use a recovery code instead</a>
+    <a href="/account/login">Start again</a>
+</p>

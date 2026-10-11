@@ -1,0 +1,89 @@
+@page "/admin/clients/{clientId}"
+@model ClientDetailModel
+@{
+    ViewData["Title"] = Model.ClientId;
+    ViewData["Nav"] = "admin";
+    ViewData["Side"] = "clients";
+}
+<div class="with-sidebar">
+    <partial name="_AdminNav" />
+    <div>
+        <p><a href="/admin/clients">← All clients</a></p>
+        <h1><code>@Model.ClientId</code></h1>
+        <partial name="_Flash" model="(Model.Notice, (string?)null)" />
+        @if (Model.Errors.Count > 0)
+        {
+            <div class="alert alert--error" role="alert">
+                <ul>
+                    @foreach (var error in Model.Errors)
+                    {
+                        <li>@error</li>
+                    }
+                </ul>
+            </div>
+        }
+        @if (Model.NewSecret is not null)
+        {
+            <div class="alert alert--success" role="status"><p>The secret was rotated.</p></div>
+            <partial name="_NewSecret" model="Model.NewSecret" />
+        }
+        <section class="panel" aria-labelledby="status-heading">
+            <h2 class="panel__title" id="status-heading">Status</h2>
+            <dl class="facts">
+                <dt>Kind</dt>
+                <dd>@Model.Form.Kind</dd>
+                <dt>State</dt>
+                <dd>
+                    @if (Model.IsDisabled)
+                    {
+                        <span class="badge badge--danger">Disabled</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge--ok">Enabled</span>
+                    }
+                </dd>
+                <dt>Active grants</dt>
+                <dd>@Model.ActiveGrants</dd>
+                <dt>Previous secrets still accepted</dt>
+                <dd>@Model.SecretsInGrace</dd>
+            </dl>
+            @if (Model.IsDisabled)
+            {
+                <form method="post" asp-page-handler="Enable" asp-route-clientId="@Model.ClientId">
+                    <button type="submit" class="button button--secondary">Enable client</button>
+                </form>
+            }
+            else
+            {
+                <form method="post" asp-page-handler="Disable" asp-route-clientId="@Model.ClientId">
+                    <p class="muted">Disabling revokes all grants and tokens of this client at once and blocks sign-in, token, introspection and revocation requests.</p>
+                    <button type="submit" class="button button--danger">Disable client</button>
+                </form>
+            }
+        </section>
+        <section class="panel" aria-labelledby="registration-heading">
+            <h2 class="panel__title" id="registration-heading">Registration</h2>
+            <form method="post" asp-page-handler="Save" asp-route-clientId="@Model.ClientId" novalidate>
+                <partial name="_ClientFields" model="Model" />
+                <button type="submit" class="button">Save registration</button>
+            </form>
+        </section>
+        <section class="panel" aria-labelledby="rotate-heading">
+            <h2 class="panel__title" id="rotate-heading">Rotate secret</h2>
+            <p>A new secret is generated and shown once. The current secret keeps working for the grace period, then it is rejected. Existing tokens are not affected. Choose no grace period when the secret may be compromised.</p>
+            <form method="post" asp-page-handler="Rotate" asp-route-clientId="@Model.ClientId">
+                <div class="field">
+                    <label for="graceMinutes">Grace period for the current secret</label>
+                    <select id="graceMinutes" name="graceMinutes">
+                        <option value="0">None: reject the current secret immediately</option>
+                        <option value="@Model.DefaultGraceMinutes" selected>@Model.DefaultGraceMinutes minutes</option>
+                        <option value="60">1 hour</option>
+                        <option value="1440">24 hours</option>
+                    </select>
+                </div>
+                <button type="submit" class="button button--secondary">Rotate secret</button>
+            </form>
+        </section>
+    </div>
+</div>

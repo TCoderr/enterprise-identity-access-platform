@@ -1,0 +1,31 @@
+@page "/account/login"
+@model LoginModel
+@{
+    ViewData["Title"] = "Sign in";
+    ViewData["Width"] = "page--narrow";
+}
+<h1>Sign in</h1>
+@if (Model.Notice is not null)
+{
+    <div class="alert alert--info" role="status"><p>@Model.Notice</p></div>
+}
+@if (Model.ErrorMessage is not null)
+{
+    <div class="alert alert--error" role="alert" id="login-error"><p>@Model.ErrorMessage</p></div>
+}
+<form method="post" asp-page="/Account/Login" asp-route-returnUrl="@Model.ReturnUrl" asp-route-reauth="@(Model.Reauth ? "true" : null)" class="panel" novalidate>
+    <div class="field">
+        <label asp-for="Input.Email">E-mail address</label>
+        <input asp-for="Input.Email" type="email" autocomplete="username" inputmode="email" required
+               aria-describedby="@(Model.ErrorMessage is null ? null : "login-error")">
+    </div>
+    <div class="field">
+        <label asp-for="Input.Password">Password</label>
+        <input asp-for="Input.Password" type="password" autocomplete="current-password" required>
+    </div>
+    <button type="submit" class="button button--block">Sign in</button>
+</form>
+<p class="cluster">
+    <a href="/account/forgot-password">Forgot your password?</a>
+    <a href="/account/register">Create an account</a>
+</p>

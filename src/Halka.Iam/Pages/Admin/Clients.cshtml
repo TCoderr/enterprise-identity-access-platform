@@ -1,0 +1,50 @@
+@page "/admin/clients"
+@model ClientsModel
+@{
+    ViewData["Title"] = "Clients";
+    ViewData["Nav"] = "admin";
+    ViewData["Side"] = "clients";
+}
+<div class="with-sidebar">
+    <partial name="_AdminNav" />
+    <div>
+        <div class="split">
+            <h1>Clients</h1>
+            <a class="button" href="/admin/clients/new">Register a client</a>
+        </div>
+        <p>Registered applications. Client secrets are never shown here: they are displayed once when created or rotated and only their hash is stored.</p>
+        <div class="table-wrap">
+            <table class="data">
+                <caption>Registered clients</caption>
+                <thead>
+                <tr>
+                    <th scope="col">Client</th>
+                    <th scope="col">Kind</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Registered</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var client in Model.Clients)
+                {
+                    <tr>
+                        <td data-label="Client"><a asp-page="/Admin/ClientDetail" asp-route-clientId="@client.ClientId">@client.DisplayName</a><br><code>@client.ClientId</code></td>
+                        <td data-label="Kind">@client.Kind</td>
+                        <td data-label="Status">
+                            @if (client.IsDisabled)
+                            {
+                                <span class="badge badge--danger">Disabled</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge--ok">Enabled</span>
+                            }
+                        </td>
+                        <td data-label="Registered"><time datetime="@client.CreatedAt.ToString("O")">@client.CreatedAt.ToString("yyyy-MM-dd") UTC</time></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

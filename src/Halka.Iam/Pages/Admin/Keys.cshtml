@@ -1,0 +1,116 @@
+@page "/admin/keys"
+@model KeysModel
+@{
+    ViewData["Title"] = "Keys";
+    ViewData["Nav"] = "admin";
+    ViewData["Side"] = "keys";
+    var overlap = Model.Overlap;
+    var inUse = Model.Items.Where(key => key.Status is "active" or "retiring").ToList();
+}
+<div class="with-sidebar">
+    <partial name="_AdminNav" />
+    <div>
+        <h1>Keys</h1>
+        <p>Token signing and encryption keys. Only public key identifiers are shown. Every action here is recorded in the audit log and needs a recent confirmation with your authenticator.</p>
+        <partial name="_Flash" model="(Model.Notice, Model.Error)" />
+        <div class="table-wrap">
+            <table class="data">
+                <caption>Key ring</caption>
+                <thead>
+                <tr>
+                    <th scope="col">Use</th>
+                    <th scope="col">Key identifier</th>
+                    <th scope="col">State</th>
+                    <th scope="col">Created</th>
+                    <th scope="col">Retire</th>
+                    <th scope="col"><span class="visually-hidden">Actions</span></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var key in Model.Items)
+                {
+                    <tr>
+                        <td data-label="Use">@key.Use</td>
+                        <td data-label="Key identifier"><code>@key.Kid</code></td>
+                        <td data-label="State">
+                            <span class="badge @(key.Status switch { "active" => "badge--ok", "retiring" => "badge--warn", "revoked" => "badge--danger", _ => "" })">@key.Status</span>
+                        </td>
+                        <td data-label="Created"><time datetime="@key.CreatedAt.ToString("O")">@key.CreatedAt.ToString("yyyy-MM-dd HH:mm") UTC</time></td>
+                        <td data-label="Retire">
+                            @if (key.Status == "retiring" && key.RetireNotBefore is { } notBefore)
+                            {
+                                if (key.CanRetire)
+                                {
+                                    <span>Possible now</span>
+                                }
+                                else
+                                {
+                                    <span>Not before <time datetime="@notBefore.ToString("O")">@notBefore.ToString("yyyy-MM-dd HH:mm") UTC</time></span>
+                                }
+                            }
+                            else if (key.EndedAt is { } ended)
+                            {
+                                <time datetime="@ended.ToString("O")">@ended.ToString("yyyy-MM-dd HH:mm") UTC</time>
+                            }
+                            else
+                            {
+                                <span>—</span>
+                            }
+                        </td>
+                        <td>
+                            @if (key.Status == "retiring")
+                            {
+                                <form method="post" asp-page-handler="Retire" class="inline-form">
+                                    <input type="hidden" name="id" value="@key.Id">
+                                    <button type="submit" class="button button--secondary button--small" disabled="@(!key.CanRetire)"
+                                            title="@(key.CanRetire ? null : "Tokens protected by this key may still be valid")">Retire<span class="visually-hidden"> key @key.Kid[..8]</span></button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <section class="panel" aria-labelledby="rotate-heading">
+            <h2 class="panel__title" id="rotate-heading">Rotate</h2>
+            <p>Rotation activates a new key for new tokens. The previous key keeps validating tokens that were issued before; signing keys also stay published in the JWKS. A previous key can be retired after <strong>@((int)overlap.TotalHours) h @overlap.Minutes min</strong>, the longest token lifetime plus a safety margin. Until then retiring is refused, so valid tokens are never broken silently.</p>
+            <div class="cluster">
+                <form method="post" asp-page-handler="Rotate" class="inline-form">
+                    <input type="hidden" name="use" value="signing">
+                    <button type="submit" class="button button--secondary">Rotate signing key</button>
+                </form>
+                <form method="post" asp-page-handler="Rotate" class="inline-form">
+                    <input type="hidden" name="use" value="encryption">
+                    <button type="submit" class="button button--secondary">Rotate encryption key</button>
+                </form>
+            </div>
+        </section>
+        <section class="panel" aria-labelledby="emergency-heading">
+            <h2 class="panel__title" id="emergency-heading">Emergency revocation</h2>
+            <div class="alert alert--warning" role="alert">
+                <p><strong>Use only when a private key may have been disclosed.</strong> The key stops being trusted immediately, without overlap. Every grant and token of every user and client is revoked and all applications must authorise again. Users stay signed in to Halka ID.</p>
+            </div>
+            <form method="post" asp-page-handler="Emergency">
+                <div class="field">
+                    <label for="emergency-key">Key</label>
+                    <select id="emergency-key" name="id" required>
+                        @foreach (var key in inUse)
+                        {
+                            <option value="@key.Id">@key.Use · @key.Status · @key.Kid[..12]…</option>
+                        }
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="emergency-reason">Reason (recorded in the audit log)</label>
+                    <input id="emergency-reason" name="reason" type="text" maxlength="200" required>
+                </div>
+                <div class="field">
+                    <label for="emergency-confirmation">Type @KeysModel.EmergencyConfirmation to confirm</label>
+                    <input id="emergency-confirmation" name="confirmation" type="text" autocomplete="off" required>
+                </div>
+                <button type="submit" class="button button--danger">Revoke key and all tokens</button>
+            </form>
+        </section>
+    </div>
+</div>

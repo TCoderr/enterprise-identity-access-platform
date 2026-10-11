@@ -1,0 +1,32 @@
+@page "/"
+@model IndexModel
+@inject IOptions<DemoClientOptions> ClientOptions
+@{
+    var client = ClientOptions.Value;
+    ViewData["Title"] = "Home";
+    ViewData["Nav"] = "home";
+    ViewData["Width"] = "page--medium";
+}
+<h1>@client.Name</h1>
+<p>@client.Tagline</p>
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <section class="panel" aria-labelledby="signed-in-heading">
+        <h2 class="panel__title" id="signed-in-heading">You are signed in</h2>
+        <p>Signed in as <strong>@User.Identity.Name</strong> through Halka ID. This session belongs to @client.Name only.</p>
+        <div class="actions">
+            <a class="button" href="/workspace">Open the workspace</a>
+            <a class="button button--secondary" href="/session">Session details</a>
+        </div>
+    </section>
+}
+else
+{
+    <section class="panel" aria-labelledby="signed-out-heading">
+        <h2 class="panel__title" id="signed-out-heading">Sign in to continue</h2>
+        <p>@client.Name does not have its own passwords. Signing in takes you to Halka ID and back; if you already have a Halka ID session you will not be asked for your credentials again.</p>
+        <div class="actions">
+            <a class="button" href="/login">Sign in with Halka ID</a>
+        </div>
+    </section>
+}

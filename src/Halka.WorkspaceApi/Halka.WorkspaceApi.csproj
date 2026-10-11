@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>Halka.WorkspaceApi</RootNamespace>
+    <AssemblyName>Halka.WorkspaceApi</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="OpenIddict.Validation.AspNetCore" />
+    <PackageReference Include="OpenIddict.Validation.SystemNetHttp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Halka.Shared\Halka.Shared.csproj" />
+  </ItemGroup>
+</Project>

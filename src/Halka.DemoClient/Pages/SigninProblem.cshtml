@@ -1,0 +1,12 @@
+@page "/signin-problem"
+@model SigninProblemModel
+@{
+    ViewData["Title"] = "Sign-in was not completed";
+    ViewData["Width"] = "page--medium";
+}
+<h1>Sign-in was not completed</h1>
+<div class="alert alert--warning" role="alert"><p>@Model.Message</p></div>
+<div class="actions">
+    <a class="button" href="/login">Try again</a>
+    <a class="button button--secondary" href="/">Home</a>
+</div>

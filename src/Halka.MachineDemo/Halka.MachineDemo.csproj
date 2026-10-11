@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Halka.MachineDemo</RootNamespace>
+    <AssemblyName>Halka.MachineDemo</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Halka.Shared\Halka.Shared.csproj" />
+  </ItemGroup>
+</Project>

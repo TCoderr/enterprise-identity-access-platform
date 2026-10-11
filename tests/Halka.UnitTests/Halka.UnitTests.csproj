@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Halka.UnitTests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Halka.Iam\Halka.Iam.csproj" />
+    <ProjectReference Include="..\..\src\Halka.Migrator\Halka.Migrator.csproj" />
+    <ProjectReference Include="..\..\tools\Halka.LocalInit\Halka.LocalInit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

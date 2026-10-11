@@ -1,0 +1,10 @@
+@page "/account/access-denied"
+@attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+@{
+    ViewData["Title"] = "Access denied";
+    ViewData["Width"] = "page--medium";
+    HttpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
+}
+<h1>Access denied</h1>
+<p>Your account is not allowed to open this page. If you were given a new role, it applies immediately; if a role was removed, so does that.</p>
+<p><a href="/manage">Go to your account</a></p>

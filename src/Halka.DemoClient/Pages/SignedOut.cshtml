@@ -1,0 +1,12 @@
+@page "/signed-out"
+@model SignedOutModel
+@{
+    ViewData["Title"] = "Signed out";
+    ViewData["Width"] = "page--medium";
+}
+<h1>Signed out</h1>
+<div class="alert alert--success" role="status"><p>@Model.Message</p></div>
+<div class="actions">
+    <a class="button" href="/login">Sign in again</a>
+    <a class="button button--secondary" href="/">Home</a>
+</div>

@@ -1,0 +1,20 @@
+@{
+    var current = ViewData["Side"] as string;
+    (string Key, string Href, string Text)[] items =
+    [
+        ("overview", "/manage", "Overview"),
+        ("password", "/manage/password", "Password"),
+        ("mfa", "/manage/mfa", "Two-step sign-in"),
+        ("sessions", "/manage/sessions", "Sessions"),
+        ("apps", "/manage/apps", "Connected applications"),
+        ("activity", "/manage/activity", "Security activity"),
+    ];
+}
+<nav class="side-nav" aria-label="Account">
+    <ul>
+        @foreach (var item in items)
+        {
+            <li><a href="@item.Href" aria-current="@(current == item.Key ? "page" : null)">@item.Text</a></li>
+        }
+    </ul>
+</nav>

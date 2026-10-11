@@ -1,0 +1,61 @@
+@page "/manage/apps"
+@model AppsModel
+@{
+    ViewData["Title"] = "Connected applications";
+    ViewData["Nav"] = "account";
+    ViewData["Side"] = "apps";
+}
+<div class="with-sidebar">
+    <partial name="_ManageNav" />
+    <div>
+        <h1>Connected applications</h1>
+        <p>Applications you allowed to use your Halka ID account. Withdrawing access revokes the application's tokens in every session at once.</p>
+        @if (Model.Notice is not null)
+        {
+            <div class="alert alert--success" role="status"><p>@Model.Notice</p></div>
+        }
+        @if (Model.Apps.Count == 0)
+        {
+            <p class="empty">You have not allowed any application yet.</p>
+        }
+        else
+        {
+            <div class="table-wrap">
+                <table class="data">
+                    <caption>Applications with access</caption>
+                    <thead>
+                    <tr>
+                        <th scope="col">Application</th>
+                        <th scope="col">Permissions</th>
+                        <th scope="col">Allowed on</th>
+                        <th scope="col">Active sign-ins</th>
+                        <th scope="col"><span class="visually-hidden">Actions</span></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var app in Model.Apps)
+                    {
+                        <tr>
+                            <td data-label="Application"><strong>@app.Name</strong><br><code>@app.ClientId</code></td>
+                            <td data-label="Permissions">
+                                @foreach (var scope in app.Scopes)
+                                {
+                                    <span class="badge">@scope</span>
+                                }
+                            </td>
+                            <td data-label="Allowed on"><time datetime="@app.GrantedAt.ToString("O")">@app.GrantedAt.ToString("yyyy-MM-dd HH:mm") UTC</time></td>
+                            <td data-label="Active sign-ins">@app.ActiveGrants</td>
+                            <td>
+                                <form method="post" asp-page-handler="Revoke" class="inline-form">
+                                    <input type="hidden" name="clientId" value="@app.ClientId">
+                                    <button type="submit" class="button button--secondary button--small">Withdraw access<span class="visually-hidden"> for @app.Name</span></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

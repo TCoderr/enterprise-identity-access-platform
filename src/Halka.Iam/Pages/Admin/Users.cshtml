@@ -1,0 +1,76 @@
+@page "/admin/users"
+@model UsersModel
+@{
+    ViewData["Title"] = "Users";
+    ViewData["Nav"] = "admin";
+    ViewData["Side"] = "users";
+}
+<div class="with-sidebar">
+    <partial name="_AdminNav" />
+    <div>
+        <h1>Users</h1>
+        <form method="get" class="cluster" role="search">
+            <div class="field">
+                <label asp-for="Search">Search by e-mail address or name</label>
+                <input asp-for="Search" type="search" maxlength="100">
+            </div>
+            <button type="submit" class="button button--secondary">Search</button>
+        </form>
+        @if (Model.Users.Count == 0)
+        {
+            <p class="empty">No account matches.</p>
+        }
+        else
+        {
+            <div class="table-wrap">
+                <table class="data">
+                    <caption>Accounts, page @Model.PageNumber</caption>
+                    <thead>
+                    <tr>
+                        <th scope="col">E-mail address</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Two-step</th>
+                        <th scope="col">Roles</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var user in Model.Users)
+                    {
+                        <tr>
+                            <td data-label="E-mail address"><a asp-page="/Admin/UserDetail" asp-route-id="@user.Id">@user.Email</a></td>
+                            <td data-label="Name">@user.DisplayName</td>
+                            <td data-label="Status">
+                                @if (user.IsDisabled)
+                                {
+                                    <span class="badge badge--danger">Disabled</span>
+                                }
+                                else if (user.IsLockedOut)
+                                {
+                                    <span class="badge badge--warn">Locked out</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge--ok">Active</span>
+                                }
+                            </td>
+                            <td data-label="Two-step">@(user.MfaEnabled ? "On" : "Off")</td>
+                            <td data-label="Roles">@string.Join(", ", user.Roles)</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+            <nav class="cluster" aria-label="Pages">
+                @if (Model.PageNumber > 1)
+                {
+                    <a class="button button--secondary button--small" asp-page="/Admin/Users" asp-route-search="@Model.Search" asp-route-pageNumber="@(Model.PageNumber - 1)">Previous page</a>
+                }
+                @if (Model.HasMore)
+                {
+                    <a class="button button--secondary button--small" asp-page="/Admin/Users" asp-route-search="@Model.Search" asp-route-pageNumber="@(Model.PageNumber + 1)">Next page</a>
+                }
+            </nav>
+        }
+    </div>
+</div>

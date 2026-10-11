@@ -1,0 +1,35 @@
+@page "/connect/authorize"
+@model AuthorizeModel
+@{
+    ViewData["Title"] = "Allow access";
+    ViewData["Width"] = "page--narrow";
+    var consent = Model.Consent!;
+}
+<h1>Allow access?</h1>
+<p><strong>@consent.ClientName</strong> wants to access your Halka ID account.</p>
+<dl class="facts">
+    <dt>Application</dt>
+    <dd>@consent.ClientName <span class="muted">(<code>@consent.ClientId</code>)</span></dd>
+    <dt>Signed in as</dt>
+    <dd>@consent.UserDisplay</dd>
+    <dt>Returns to</dt>
+    <dd><code>@consent.RedirectHost</code></dd>
+</dl>
+<h2 id="scopes-heading">It will be able to</h2>
+<ul class="scope-list" aria-labelledby="scopes-heading">
+    @foreach (var scope in consent.Scopes)
+    {
+        <li><strong>@scope.DisplayName</strong><span class="muted">@scope.Description</span></li>
+    }
+</ul>
+<form method="post" action="/connect/authorize" asp-antiforgery="true">
+    @foreach (var parameter in consent.Parameters)
+    {
+        <input type="hidden" name="@parameter.Key" value="@parameter.Value">
+    }
+    <div class="actions">
+        <button type="submit" class="button" name="@AuthorizeModel.DecisionField" value="@AuthorizeModel.Allow">Allow</button>
+        <button type="submit" class="button button--secondary" name="@AuthorizeModel.DecisionField" value="@AuthorizeModel.Deny">Deny</button>
+    </div>
+</form>
+<p class="muted">You can withdraw this permission at any time under Account → Connected applications.</p>

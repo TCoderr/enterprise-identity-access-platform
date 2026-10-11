@@ -1,0 +1,388 @@
+# Halka ID local stack. Use scripts/local-stack.ps1 (or .sh): it sets the variables below and runs "init" first.
+#
+#   HALKA_PROJECT     Compose project name                     (default halka)
+#   HALKA_LOCAL_DIR   private material created by "init"       (default ../.local, relative to this file)
+#   HALKA_IAM_PORT    host and container port of the IdP       (default 9443)
+#   HALKA_PANO_PORT   host and container port of Pano          (default 9444)
+#   HALKA_RAPOR_PORT  host and container port of Rapor         (default 9445)
+#   HALKA_API_PORT    host and container port of the API       (default 9446)
+#
+# Every service publishes on 127.0.0.1 only and listens on the same port inside the network, so the issuer URL is
+# identical for the browser and for other containers (network aliases carry the public host names).
+
+name: ${HALKA_PROJECT:-halka}
+
+x-app-hardening: &app-hardening
+  read_only: true
+  tmpfs:
+    - /tmp
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  restart: unless-stopped
+  stop_grace_period: 15s
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/db-superuser
+    secrets:
+      - db-superuser
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ${HALKA_LOCAL_DIR:-../.local}/postgres/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready --username postgres --dbname postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  migrator:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        PROJECT: Halka.Migrator
+    command: ["Halka.Migrator.dll", "up"]
+    environment:
+      Database__Host: postgres
+      Database__Name: halka_iam
+      Database__Username: halka_migrator
+      Database__PasswordFile: /run/secrets/db-migrator
+      Migrator__IamRuntimeRole: halka_iam_app
+      Migrator__SeedFile: /run/secrets/seed-credentials
+      Iam__PublicOrigin: https://id.halka.localhost:${HALKA_IAM_PORT:-9443}
+      DataProtection__KeyDirectory: /keys/dp
+      DataProtection__WrapCertificatePath: /run/secrets/dp-wrap-iam-pfx
+      DataProtection__WrapCertificatePasswordFile: /run/secrets/dp-wrap-iam-password
+      Migrator__Pano__Database__Host: postgres
+      Migrator__Pano__Database__Name: halka_pano
+      Migrator__Pano__Database__Username: halka_migrator
+      Migrator__Pano__Database__PasswordFile: /run/secrets/db-migrator
+      Migrator__Pano__RuntimeRole: halka_pano_app
+      Migrator__Rapor__Database__Host: postgres
+      Migrator__Rapor__Database__Name: halka_rapor
+      Migrator__Rapor__Database__Username: halka_migrator
+      Migrator__Rapor__Database__PasswordFile: /run/secrets/db-migrator
+      Migrator__Rapor__RuntimeRole: halka_rapor_app
+      Migrator__Demo__PanoOrigin: https://pano.localhost:${HALKA_PANO_PORT:-9444}
+      Migrator__Demo__RaporOrigin: https://rapor.localhost:${HALKA_RAPOR_PORT:-9445}
+      Migrator__Demo__PanoSecretFile: /run/secrets/client-pano
+      Migrator__Demo__RaporSecretFile: /run/secrets/client-rapor
+      Migrator__Demo__WorkspaceApiSecretFile: /run/secrets/client-workspace-api
+      Migrator__Demo__OpsMachineSecretFile: /run/secrets/client-ops-machine
+    secrets:
+      - db-migrator
+      - seed-credentials
+      - dp-wrap-iam-pfx
+      - dp-wrap-iam-password
+      - client-pano
+      - client-rapor
+      - client-workspace-api
+      - client-ops-machine
+    volumes:
+      - ${HALKA_LOCAL_DIR:-../.local}/dp-keys/iam:/keys/dp
+    networks:
+      - internal
+    depends_on:
+      postgres:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: "no"
+
+  iam:
+    <<: *app-hardening
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        PROJECT: Halka.Iam
+    command: ["Halka.Iam.dll"]
+    environment:
+      Kestrel__Endpoints__Https__Url: https://+:${HALKA_IAM_PORT:-9443}
+      Kestrel__Endpoints__Https__Certificate__Path: /run/secrets/tls-iam-crt
+      Kestrel__Endpoints__Https__Certificate__KeyPath: /run/secrets/tls-iam-key
+      AllowedHosts: id.halka.localhost
+      Iam__PublicOrigin: https://id.halka.localhost:${HALKA_IAM_PORT:-9443}
+      Database__Host: postgres
+      Database__Name: halka_iam
+      Database__Username: halka_iam_app
+      Database__PasswordFile: /run/secrets/db-iam
+      Database__ApplicationName: halka-iam
+      DataProtection__KeyDirectory: /keys/dp
+      DataProtection__WrapCertificatePath: /run/secrets/dp-wrap-iam-pfx
+      DataProtection__WrapCertificatePasswordFile: /run/secrets/dp-wrap-iam-password
+      Mail__SinkDirectory: /mail-sink
+      Backchannel__CaCertificatePath: /run/secrets/tls-ca-crt
+    secrets:
+      - db-iam
+      - tls-ca-crt
+      - tls-iam-crt
+      - tls-iam-key
+      - dp-wrap-iam-pfx
+      - dp-wrap-iam-password
+    volumes:
+      - ${HALKA_LOCAL_DIR:-../.local}/dp-keys/iam:/keys/dp
+      - ${HALKA_LOCAL_DIR:-../.local}/mail-sink:/mail-sink
+    ports:
+      - "127.0.0.1:${HALKA_IAM_PORT:-9443}:${HALKA_IAM_PORT:-9443}"
+    networks:
+      internal:
+        aliases:
+          - id.halka.localhost
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "dotnet", "Halka.Iam.dll", "--healthcheck"]
+      interval: 10s
+      timeout: 6s
+      retries: 12
+      start_period: 10s
+
+  workspace-api:
+    <<: *app-hardening
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        PROJECT: Halka.WorkspaceApi
+    command: ["Halka.WorkspaceApi.dll"]
+    environment:
+      Kestrel__Endpoints__Https__Url: https://+:${HALKA_API_PORT:-9446}
+      Kestrel__Endpoints__Https__Certificate__Path: /run/secrets/tls-api-crt
+      Kestrel__Endpoints__Https__Certificate__KeyPath: /run/secrets/tls-api-key
+      AllowedHosts: workspace-api.localhost
+      Api__Authority: https://id.halka.localhost:${HALKA_IAM_PORT:-9443}
+      Api__ClientSecretFile: /run/secrets/client-workspace-api
+      Backchannel__CaCertificatePath: /run/secrets/tls-ca-crt
+    secrets:
+      - tls-ca-crt
+      - tls-api-crt
+      - tls-api-key
+      - client-workspace-api
+    ports:
+      - "127.0.0.1:${HALKA_API_PORT:-9446}:${HALKA_API_PORT:-9446}"
+    networks:
+      internal:
+        aliases:
+          - workspace-api.localhost
+    depends_on:
+      iam:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "dotnet", "Halka.WorkspaceApi.dll", "--healthcheck"]
+      interval: 10s
+      timeout: 6s
+      retries: 12
+      start_period: 10s
+
+  pano:
+    <<: *app-hardening
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        PROJECT: Halka.Pano
+    command: ["Halka.Pano.dll"]
+    environment:
+      Kestrel__Endpoints__Https__Url: https://+:${HALKA_PANO_PORT:-9444}
+      Kestrel__Endpoints__Https__Certificate__Path: /run/secrets/tls-pano-crt
+      Kestrel__Endpoints__Https__Certificate__KeyPath: /run/secrets/tls-pano-key
+      AllowedHosts: pano.localhost
+      Client__PublicOrigin: https://pano.localhost:${HALKA_PANO_PORT:-9444}
+      Client__Authority: https://id.halka.localhost:${HALKA_IAM_PORT:-9443}
+      Client__ClientId: pano-web
+      Client__ClientSecretFile: /run/secrets/client-pano
+      Client__ApiBaseUrl: https://workspace-api.localhost:${HALKA_API_PORT:-9446}
+      Database__Host: postgres
+      Database__Name: halka_pano
+      Database__Username: halka_pano_app
+      Database__PasswordFile: /run/secrets/db-pano
+      Database__ApplicationName: halka-pano
+      DataProtection__KeyDirectory: /keys/dp
+      DataProtection__WrapCertificatePath: /run/secrets/dp-wrap-pano-pfx
+      DataProtection__WrapCertificatePasswordFile: /run/secrets/dp-wrap-pano-password
+      Backchannel__CaCertificatePath: /run/secrets/tls-ca-crt
+    secrets:
+      - db-pano
+      - tls-ca-crt
+      - tls-pano-crt
+      - tls-pano-key
+      - client-pano
+      - dp-wrap-pano-pfx
+      - dp-wrap-pano-password
+    volumes:
+      - ${HALKA_LOCAL_DIR:-../.local}/dp-keys/pano:/keys/dp
+    ports:
+      - "127.0.0.1:${HALKA_PANO_PORT:-9444}:${HALKA_PANO_PORT:-9444}"
+    networks:
+      internal:
+        aliases:
+          - pano.localhost
+    depends_on:
+      iam:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "dotnet", "Halka.Pano.dll", "--healthcheck"]
+      interval: 10s
+      timeout: 6s
+      retries: 12
+      start_period: 10s
+
+  rapor:
+    <<: *app-hardening
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        PROJECT: Halka.Rapor
+    command: ["Halka.Rapor.dll"]
+    environment:
+      Kestrel__Endpoints__Https__Url: https://+:${HALKA_RAPOR_PORT:-9445}
+      Kestrel__Endpoints__Https__Certificate__Path: /run/secrets/tls-rapor-crt
+      Kestrel__Endpoints__Https__Certificate__KeyPath: /run/secrets/tls-rapor-key
+      AllowedHosts: rapor.localhost
+      Client__PublicOrigin: https://rapor.localhost:${HALKA_RAPOR_PORT:-9445}
+      Client__Authority: https://id.halka.localhost:${HALKA_IAM_PORT:-9443}
+      Client__ClientId: rapor-web
+      Client__ClientSecretFile: /run/secrets/client-rapor
+      Client__ApiBaseUrl: https://workspace-api.localhost:${HALKA_API_PORT:-9446}
+      Database__Host: postgres
+      Database__Name: halka_rapor
+      Database__Username: halka_rapor_app
+      Database__PasswordFile: /run/secrets/db-rapor
+      Database__ApplicationName: halka-rapor
+      DataProtection__KeyDirectory: /keys/dp
+      DataProtection__WrapCertificatePath: /run/secrets/dp-wrap-rapor-pfx
+      DataProtection__WrapCertificatePasswordFile: /run/secrets/dp-wrap-rapor-password
+      Backchannel__CaCertificatePath: /run/secrets/tls-ca-crt
+    secrets:
+      - db-rapor
+      - tls-ca-crt
+      - tls-rapor-crt
+      - tls-rapor-key
+      - client-rapor
+      - dp-wrap-rapor-pfx
+      - dp-wrap-rapor-password
+    volumes:
+      - ${HALKA_LOCAL_DIR:-../.local}/dp-keys/rapor:/keys/dp
+    ports:
+      - "127.0.0.1:${HALKA_RAPOR_PORT:-9445}:${HALKA_RAPOR_PORT:-9445}"
+    networks:
+      internal:
+        aliases:
+          - rapor.localhost
+    depends_on:
+      iam:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "dotnet", "Halka.Rapor.dll", "--healthcheck"]
+      interval: 10s
+      timeout: 6s
+      retries: 12
+      start_period: 10s
+
+  # Machine-to-machine demo. Not started by "up"; run it with:
+  #   docker compose --profile machine run --rm machine-demo
+  machine-demo:
+    profiles: ["machine"]
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        PROJECT: Halka.MachineDemo
+    command: ["Halka.MachineDemo.dll"]
+    environment:
+      Machine__Authority: https://id.halka.localhost:${HALKA_IAM_PORT:-9443}
+      Machine__ApiBaseUrl: https://workspace-api.localhost:${HALKA_API_PORT:-9446}
+      Machine__ClientId: ops-machine
+      Machine__ClientSecretFile: /run/secrets/client-ops-machine
+      Backchannel__CaCertificatePath: /run/secrets/tls-ca-crt
+    secrets:
+      - tls-ca-crt
+      - client-ops-machine
+    networks:
+      - internal
+    depends_on:
+      workspace-api:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: "no"
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  pgdata:
+
+secrets:
+  db-superuser:
+    file: ${HALKA_LOCAL_DIR:-../.local}/secrets/db-superuser
+  db-migrator:
+    file: ${HALKA_LOCAL_DIR:-../.local}/secrets/db-migrator
+  db-iam:
+    file: ${HALKA_LOCAL_DIR:-../.local}/secrets/db-iam
+  seed-credentials:
+    file: ${HALKA_LOCAL_DIR:-../.local}/seed/credentials.json
+  tls-ca-crt:
+    file: ${HALKA_LOCAL_DIR:-../.local}/tls/ca.crt
+  tls-iam-crt:
+    file: ${HALKA_LOCAL_DIR:-../.local}/tls/iam.crt
+  tls-iam-key:
+    file: ${HALKA_LOCAL_DIR:-../.local}/tls/iam.key
+  dp-wrap-iam-pfx:
+    file: ${HALKA_LOCAL_DIR:-../.local}/dp-wrap/iam.pfx
+  dp-wrap-iam-password:
+    file: ${HALKA_LOCAL_DIR:-../.local}/secrets/dp-wrap-iam
+  db-pano:
+    file: ${HALKA_LOCAL_DIR:-../.local}/secrets/db-pano
+  db-rapor:
+    file: ${HALKA_LOCAL_DIR:-../.local}/secrets/db-rapor
+  tls-pano-crt:
+    file: ${HALKA_LOCAL_DIR:-../.local}/tls/pano.crt
+  tls-pano-key:
+    file: ${HALKA_LOCAL_DIR:-../.local}/tls/pano.key
+  tls-rapor-crt:
+    file: ${HALKA_LOCAL_DIR:-../.local}/tls/rapor.crt
+  tls-rapor-key:
+    file: ${HALKA_LOCAL_DIR:-../.local}/tls/rapor.key
+  tls-api-crt:
+    file: ${HALKA_LOCAL_DIR:-../.local}/tls/api.crt
+  tls-api-key:
+    file: ${HALKA_LOCAL_DIR:-../.local}/tls/api.key
+  client-pano:
+    file: ${HALKA_LOCAL_DIR:-../.local}/secrets/client-pano
+  client-rapor:
+    file: ${HALKA_LOCAL_DIR:-../.local}/secrets/client-rapor
+  client-workspace-api:
+    file: ${HALKA_LOCAL_DIR:-../.local}/secrets/client-workspace-api
+  client-ops-machine:
+    file: ${HALKA_LOCAL_DIR:-../.local}/secrets/client-ops-machine
+  dp-wrap-pano-pfx:
+    file: ${HALKA_LOCAL_DIR:-../.local}/dp-wrap/pano.pfx
+  dp-wrap-pano-password:
+    file: ${HALKA_LOCAL_DIR:-../.local}/secrets/dp-wrap-pano
+  dp-wrap-rapor-pfx:
+    file: ${HALKA_LOCAL_DIR:-../.local}/dp-wrap/rapor.pfx
+  dp-wrap-rapor-password:
+    file: ${HALKA_LOCAL_DIR:-../.local}/secrets/dp-wrap-rapor

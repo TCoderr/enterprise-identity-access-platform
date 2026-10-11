@@ -1,0 +1,75 @@
+@page "/admin/audit"
+@model AuditModel
+@{
+    ViewData["Title"] = "Audit log";
+    ViewData["Nav"] = "admin";
+    ViewData["Side"] = "audit";
+}
+<div class="with-sidebar">
+    <partial name="_AdminNav" />
+    <div>
+        <h1>Audit log</h1>
+        <p>Append-only record of security events. It contains identifiers only: no e-mail addresses, network addresses, tokens or secrets.</p>
+        <form method="get" class="panel">
+            <div class="cluster">
+                <div class="field">
+                    <label asp-for="EventPrefix">Event starts with</label>
+                    <input asp-for="EventPrefix" type="text" maxlength="64" placeholder="for example session.">
+                </div>
+                <div class="field">
+                    <label asp-for="Subject">Account, session, grant or client identifier</label>
+                    <input asp-for="Subject" type="text" maxlength="128">
+                </div>
+                <div class="field">
+                    <label asp-for="Outcome">Result</label>
+                    <select asp-for="Outcome">
+                        <option value="">Any</option>
+                        <option value="success">success</option>
+                        <option value="failure">failure</option>
+                        <option value="denied">denied</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="button button--secondary">Filter</button>
+        </form>
+        @if (Model.Items.Count == 0)
+        {
+            <p class="empty">No event matches.</p>
+        }
+        else
+        {
+            <div class="table-wrap">
+                <table class="data">
+                    <caption>Events, newest first</caption>
+                    <thead>
+                    <tr>
+                        <th scope="col">When</th>
+                        <th scope="col">Event</th>
+                        <th scope="col">Result</th>
+                        <th scope="col">Actor</th>
+                        <th scope="col">Target</th>
+                        <th scope="col">Detail</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td data-label="When"><time datetime="@item.OccurredAt.ToString("O")">@item.OccurredAt.ToString("yyyy-MM-dd HH:mm:ss") UTC</time></td>
+                            <td data-label="Event"><code>@item.Action</code></td>
+                            <td data-label="Result"><span class="badge @(item.Outcome == "success" ? "badge--ok" : "badge--warn")">@item.Outcome</span></td>
+                            <td data-label="Actor">@item.ActorType<br><code>@item.ActorId</code></td>
+                            <td data-label="Target">@item.TargetType<br><code>@item.TargetId</code></td>
+                            <td data-label="Detail">@item.Reason</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+            @if (Model.NextBefore is { } next)
+            {
+                <p><a class="button button--secondary button--small" asp-page="/Admin/Audit" asp-route-eventPrefix="@Model.EventPrefix" asp-route-subject="@Model.Subject" asp-route-outcome="@Model.Outcome" asp-route-before="@next">Older events</a></p>
+            }
+        }
+    </div>
+</div>

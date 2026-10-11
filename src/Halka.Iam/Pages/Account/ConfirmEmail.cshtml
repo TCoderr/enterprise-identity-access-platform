@@ -1,0 +1,22 @@
+@page "/account/confirm-email"
+@model ConfirmEmailModel
+@{
+    ViewData["Title"] = "Confirm your e-mail address";
+    ViewData["Width"] = "page--narrow";
+}
+<h1>Confirm your e-mail address</h1>
+@if (Model.Failed)
+{
+    <div class="alert alert--error" role="alert">
+        <p>This confirmation link is not valid any more. It may have expired or already been used.</p>
+    </div>
+    <p><a href="/account/login">Go to sign in</a></p>
+}
+else
+{
+    <p>Select the button to confirm the address for your Halka ID account.</p>
+    <form method="post" asp-page="/Account/ConfirmEmail">
+        <input type="hidden" asp-for="Token">
+        <button type="submit" class="button">Confirm e-mail address</button>
+    </form>
+}

@@ -1,0 +1,52 @@
+@page "/admin/ops"
+@model OpsModel
+@{
+    ViewData["Title"] = "Operations";
+    ViewData["Nav"] = "admin";
+    ViewData["Side"] = "ops";
+}
+<div class="with-sidebar">
+    <partial name="_AdminNav" />
+    <div>
+        <h1>Operations</h1>
+        <p>State as of <time datetime="@Model.Now.ToString("O")">@Model.Now.ToString("yyyy-MM-dd HH:mm:ss") UTC</time>. Health endpoints for probes: <code>/health/live</code> and <code>/health/ready</code>.</p>
+        <section class="panel" aria-labelledby="deps-heading">
+            <h2 class="panel__title" id="deps-heading">Dependencies</h2>
+            <dl class="facts">
+                <dt>Database</dt>
+                <dd><span class="badge @(Model.DatabaseReachable ? "badge--ok" : "badge--danger")">@(Model.DatabaseReachable ? "Reachable" : "Unreachable")</span></dd>
+                <dt>Signing keys loaded</dt>
+                <dd><span class="badge @(Model.LoadedSigningKeys > 0 ? "badge--ok" : "badge--danger")">@Model.LoadedSigningKeys</span></dd>
+                <dt>Encryption keys loaded</dt>
+                <dd><span class="badge @(Model.LoadedEncryptionKeys > 0 ? "badge--ok" : "badge--danger")">@Model.LoadedEncryptionKeys</span></dd>
+            </dl>
+        </section>
+        <section class="panel" aria-labelledby="mail-heading">
+            <h2 class="panel__title" id="mail-heading">Demo mail outbox</h2>
+            <dl class="facts">
+                <dt>Delivery worker</dt>
+                <dd>@(Model.MailWorkerEnabled ? "Running" : "Disabled")</dd>
+                <dt>Waiting for delivery</dt>
+                <dd>@Model.PendingMail</dd>
+                <dt>Oldest waiting</dt>
+                <dd>@(Model.OldestPendingMailAge is { } age ? $"{(int)age.TotalSeconds} seconds" : "—")</dd>
+                <dt>Dead-lettered</dt>
+                <dd><span class="badge @(Model.DeadMail == 0 ? "badge--ok" : "badge--danger")">@Model.DeadMail</span></dd>
+            </dl>
+            <p class="muted">Message contents are never shown here. Delivered demo mail is written to the private sink directory of the installation.</p>
+        </section>
+        <section class="panel" aria-labelledby="runtime-heading">
+            <h2 class="panel__title" id="runtime-heading">Runtime</h2>
+            <dl class="facts">
+                <dt>Active sessions</dt>
+                <dd>@Model.ActiveSessions</dd>
+                <dt>Active grants</dt>
+                <dd>@Model.ActiveGrants</dd>
+                <dt>Version</dt>
+                <dd>@Model.Version</dd>
+                <dt>Environment</dt>
+                <dd>@Model.EnvironmentName</dd>
+            </dl>
+        </section>
+    </div>
+</div>

@@ -1,0 +1,45 @@
+@page "/account/step-up"
+@model StepUpModel
+@{
+    ViewData["Title"] = "Confirm it is you";
+    ViewData["Width"] = "page--narrow";
+}
+<h1>Confirm it is you</h1>
+<p>This action is sensitive. A signed-in browser is not enough for it: please verify again. The confirmation is valid for @Model.WindowMinutes minutes.</p>
+@if (Model.ErrorMessage is not null)
+{
+    <div class="alert alert--error" role="alert" id="step-up-error"><p>@Model.ErrorMessage</p></div>
+}
+@if (Model.UsesSecondFactor)
+{
+    <form method="post" asp-page="/Account/StepUp" asp-page-handler="Totp" asp-route-returnUrl="@Model.ReturnUrl" class="panel" novalidate>
+        <div class="field">
+            <label for="totp-code">Authentication code</label>
+            <span class="field__hint" id="totp-hint">Six digits from your authenticator app.</span>
+            <input id="totp-code" name="code" type="text" class="input--code" inputmode="numeric" autocomplete="one-time-code" maxlength="9" required autofocus
+                   data-code="totp" aria-describedby="totp-hint">
+        </div>
+        <button type="submit" class="button button--block">Confirm</button>
+    </form>
+    <details class="disclosure">
+        <summary>Use a recovery code instead</summary>
+        <form method="post" asp-page="/Account/StepUp" asp-page-handler="Recovery" asp-route-returnUrl="@Model.ReturnUrl" novalidate>
+            <div class="field">
+                <label for="recovery-code">Recovery code</label>
+                <input id="recovery-code" name="code" type="text" class="input--recovery" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24" required data-code="recovery">
+            </div>
+            <button type="submit" class="button button--secondary">Confirm with recovery code</button>
+        </form>
+    </details>
+}
+else
+{
+    <form method="post" asp-page="/Account/StepUp" asp-page-handler="Password" asp-route-returnUrl="@Model.ReturnUrl" class="panel" novalidate>
+        <div class="field">
+            <label for="current-password">Password</label>
+            <input id="current-password" name="password" type="password" autocomplete="current-password" required autofocus>
+        </div>
+        <button type="submit" class="button button--block">Confirm</button>
+    </form>
+}
+<p><a href="/manage">Cancel</a></p>

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Halka.Smoke</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <!-- Runs only against a disposable Compose project started by scripts/smoke.ps1; not part of "dotnet test". -->
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Halka.TestKit\Halka.TestKit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="Halka.TestKit" />
+  </ItemGroup>
+</Project>

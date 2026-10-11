@@ -1,0 +1,49 @@
+@{
+    var session = Context.GetCurrentSession();
+    var nav = ViewData["Nav"] as string;
+    var width = ViewData["Width"] as string ?? string.Empty;
+    var isAdmin = session is not null && Roles.Administrative.Any(session.IsInRole);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <meta name="robots" content="noindex">
+    <title>@ViewData["Title"] · Halka ID</title>
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/assets/site.css">
+    <script type="module" src="/assets/site.js"></script>
+</head>
+<body class="app-halka">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+    <div class="site-header__inner">
+        <a class="brand" href="/"><span class="brand__mark" aria-hidden="true">H</span><span>Halka ID</span></a>
+        @if (session is not null)
+        {
+            <nav class="site-nav" aria-label="Primary">
+                <a href="/manage" aria-current="@(nav == "account" ? "page" : null)">Account</a>
+                @if (isAdmin)
+                {
+                    <a href="/admin" aria-current="@(nav == "admin" ? "page" : null)">Administration</a>
+                }
+            </nav>
+            <div class="site-header__session">
+                <span class="site-header__who" title="Signed in to Halka ID">@session.DisplayName</span>
+                <form method="post" asp-page="/Account/Logout" class="inline-form">
+                    <button type="submit" class="button button--secondary button--small">Sign out</button>
+                </form>
+            </div>
+        }
+    </div>
+</header>
+<main id="main" class="page @width">
+    @RenderBody()
+</main>
+<footer class="site-footer">
+    <p>Halka ID · local demonstration identity provider by TCoderr. Not a certified or audited product.</p>
+</footer>
+</body>
+</html>

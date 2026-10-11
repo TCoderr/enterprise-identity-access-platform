@@ -1,0 +1,59 @@
+@page "/manage"
+@model IndexModel
+@{
+    ViewData["Title"] = "Your account";
+    ViewData["Nav"] = "account";
+    ViewData["Side"] = "overview";
+}
+<div class="with-sidebar">
+    <partial name="_ManageNav" />
+    <div>
+        <h1>Your account</h1>
+        <section class="panel" aria-labelledby="profile-heading">
+            <h2 class="panel__title" id="profile-heading">Profile</h2>
+            <dl class="facts">
+                <dt>Name</dt>
+                <dd>@Model.Session.DisplayName</dd>
+                <dt>E-mail address</dt>
+                <dd>@Model.Session.Email</dd>
+                <dt>Roles</dt>
+                <dd>
+                    @foreach (var role in Model.Session.Roles)
+                    {
+                        <span class="badge">@role</span>
+                    }
+                </dd>
+                <dt>Two-step sign-in</dt>
+                <dd>
+                    @if (Model.Session.MfaEnabled)
+                    {
+                        <span class="badge badge--ok">On</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge--warn">Off</span>
+                        <a href="/manage/mfa/enroll">Set up an authenticator app</a>
+                    }
+                </dd>
+            </dl>
+        </section>
+        <section class="panel" aria-labelledby="session-heading">
+            <h2 class="panel__title" id="session-heading">This session</h2>
+            <dl class="facts">
+                <dt>Signed in</dt>
+                <dd><time datetime="@Model.Session.AuthTime.ToString("O")">@Model.Session.AuthTime.ToString("yyyy-MM-dd HH:mm") UTC</time></dd>
+                <dt>Sign-in methods</dt>
+                <dd>
+                    @foreach (var method in Model.Session.Amr)
+                    {
+                        <span class="badge badge--accent">@method</span>
+                    }
+                </dd>
+                <dt>Ends at the latest</dt>
+                <dd><time datetime="@Model.Session.AbsoluteExpiresAt.ToString("O")">@Model.Session.AbsoluteExpiresAt.ToString("yyyy-MM-dd HH:mm") UTC</time></dd>
+                <dt>Active sessions</dt>
+                <dd><a href="/manage/sessions">@Model.ActiveSessionCount in total</a></dd>
+            </dl>
+        </section>
+    </div>
+</div>

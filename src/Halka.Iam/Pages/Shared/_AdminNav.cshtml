@@ -1,0 +1,36 @@
+@{
+    var current = ViewData["Side"] as string;
+    var session = Context.GetCurrentSession();
+    var security = session is not null && (session.IsInRole(Roles.SecurityAdmin) || session.IsInRole(Roles.PlatformAdmin));
+    var applications = session is not null && (session.IsInRole(Roles.ApplicationAdmin) || session.IsInRole(Roles.PlatformAdmin));
+    var platform = session is not null && session.IsInRole(Roles.PlatformAdmin);
+    var items = new List<(string Key, string Href, string Text)> { ("dashboard", "/admin", "Dashboard") };
+    if (security)
+    {
+        items.Add(("users", "/admin/users", "Users"));
+        items.Add(("sessions", "/admin/sessions", "Sessions"));
+        items.Add(("grants", "/admin/grants", "Grants"));
+        items.Add(("audit", "/admin/audit", "Audit log"));
+    }
+
+    if (applications)
+    {
+        items.Add(("clients", "/admin/clients", "Clients"));
+        items.Add(("scopes", "/admin/scopes", "Scopes"));
+    }
+
+    if (platform)
+    {
+        items.Add(("keys", "/admin/keys", "Keys"));
+    }
+
+    items.Add(("ops", "/admin/ops", "Operations"));
+}
+<nav class="side-nav" aria-label="Administration">
+    <ul>
+        @foreach (var item in items)
+        {
+            <li><a href="@item.Href" aria-current="@(current == item.Key ? "page" : null)">@item.Text</a></li>
+        }
+    </ul>
+</nav>

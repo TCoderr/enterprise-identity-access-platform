@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>Halka.Rapor</RootNamespace>
+    <AssemblyName>Halka.Rapor</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Halka.DemoClient\Halka.DemoClient.csproj" />
+  </ItemGroup>
+</Project>

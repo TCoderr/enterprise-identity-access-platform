@@ -1,0 +1,79 @@
+@page "/admin/scopes"
+@model ScopesModel
+@{
+    ViewData["Title"] = "Scopes";
+    ViewData["Nav"] = "admin";
+    ViewData["Side"] = "scopes";
+}
+<div class="with-sidebar">
+    <partial name="_AdminNav" />
+    <div>
+        <h1>Scopes</h1>
+        <p>A scope is a permission an application can ask for. The resource is the API (audience) that accepts tokens carrying the scope.</p>
+        <partial name="_Flash" model="(Model.Notice, (string?)null)" />
+        <div class="table-wrap">
+            <table class="data">
+                <caption>Registered scopes</caption>
+                <thead>
+                <tr>
+                    <th scope="col">Scope</th>
+                    <th scope="col">Shown to users as</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Resource</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var scope in Model.Items)
+                {
+                    <tr>
+                        <td data-label="Scope"><code>@scope.Name</code></td>
+                        <td data-label="Shown to users as">@scope.DisplayName</td>
+                        <td data-label="Description">@scope.Description</td>
+                        <td data-label="Resource">@(scope.Resources.Length == 0 ? "—" : scope.Resources)</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <section class="panel" aria-labelledby="new-scope-heading">
+            <h2 class="panel__title" id="new-scope-heading">Add a scope</h2>
+            @if (Model.Errors.Count > 0)
+            {
+                <div class="alert alert--error" role="alert">
+                    <ul>
+                        @foreach (var error in Model.Errors)
+                        {
+                            <li>@error</li>
+                        }
+                    </ul>
+                </div>
+            }
+            <form method="post" asp-page="/Admin/Scopes" novalidate>
+                <div class="field">
+                    <label asp-for="Name">Name</label>
+                    <span class="field__hint" id="scope-name-hint">Lower-case letters, digits, dot, dash or underscore, for example <code>workspace.export</code>.</span>
+                    <input asp-for="Name" type="text" maxlength="64" required spellcheck="false" autocomplete="off" aria-describedby="scope-name-hint">
+                </div>
+                <div class="field">
+                    <label asp-for="DisplayName">Shown to users as</label>
+                    <input asp-for="DisplayName" type="text" maxlength="100" required>
+                </div>
+                <div class="field">
+                    <label asp-for="Description">Description</label>
+                    <input asp-for="Description" type="text" maxlength="300">
+                </div>
+                <div class="field">
+                    <label asp-for="Resource">Resource server</label>
+                    <select asp-for="Resource">
+                        <option value="">None (identity only)</option>
+                        @foreach (var resource in Model.ResourceServers)
+                        {
+                            <option value="@resource">@resource</option>
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="button">Add scope</button>
+            </form>
+        </section>
+    </div>
+</div>

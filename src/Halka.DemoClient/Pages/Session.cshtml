@@ -1,0 +1,100 @@
+@page "/session"
+@model SessionModel
+@inject IOptions<DemoClientOptions> ClientOptions
+@{
+    var client = ClientOptions.Value;
+    ViewData["Title"] = "Session";
+    ViewData["Nav"] = "session";
+    ViewData["Width"] = "page--medium";
+}
+<h1>Session</h1>
+@if (Model.Notice is not null)
+{
+    <div class="alert alert--success" role="status"><p>@Model.Notice</p></div>
+}
+<section class="panel" aria-labelledby="who-heading">
+    <h2 class="panel__title" id="who-heading">Who you are in @client.Name</h2>
+    <dl class="facts">
+        <dt>Name</dt>
+        <dd>@User.Identity!.Name</dd>
+        <dt>Subject</dt>
+        <dd><code>@(Model.Subject.Length > 8 ? Model.Subject[..8] + "…" : Model.Subject)</code></dd>
+        <dt>Signed in at Halka ID</dt>
+        <dd>
+            @if (Model.AuthTime is { } authTime)
+            {
+                <time datetime="@authTime.ToString("O")">@authTime.ToString("yyyy-MM-dd HH:mm:ss") UTC</time>
+            }
+            else
+            {
+                <span>not reported</span>
+            }
+        </dd>
+        <dt>Sign-in methods</dt>
+        <dd>
+            @foreach (var method in Model.Methods)
+            {
+                <span class="badge badge--accent">@method</span>
+            }
+            @if (Model.Methods.Contains("mfa"))
+            {
+                <span class="badge badge--ok">Multi-factor</span>
+            }
+            else
+            {
+                <span class="badge badge--warn">Single factor</span>
+            }
+        </dd>
+    </dl>
+</section>
+<section class="panel" aria-labelledby="access-heading">
+    <h2 class="panel__title" id="access-heading">What @client.Name may do</h2>
+    <dl class="facts">
+        <dt>Granted scopes</dt>
+        <dd>
+            @foreach (var scope in Model.Scopes)
+            {
+                <span class="badge">@scope</span>
+            }
+        </dd>
+        <dt>Access token expires</dt>
+        <dd><time datetime="@Model.AccessTokenExpiresAt.ToString("O")">@Model.AccessTokenExpiresAt.ToString("yyyy-MM-dd HH:mm:ss") UTC</time></dd>
+        <dt>Refresh</dt>
+        <dd>@(Model.HasRefreshToken ? "Automatic, shortly before expiry" : "Not available")</dd>
+    </dl>
+    <p class="muted">Tokens are kept on the server of @client.Name. They are never sent to this browser and are not shown here.</p>
+    <div class="cluster">
+        <form method="post" asp-page-handler="Refresh" class="inline-form">
+            <button type="submit" class="button button--secondary">Refresh tokens now</button>
+        </form>
+        <form method="post" asp-page-handler="Fresh" class="inline-form">
+            <button type="submit" class="button button--secondary">Sign in again (fresh)</button>
+        </form>
+    </div>
+</section>
+<section class="panel" aria-labelledby="signout-heading">
+    <h2 class="panel__title" id="signout-heading">Sign out</h2>
+    <p><strong>Only @client.Name</strong> ends this application's session and revokes its tokens; Halka ID and other applications stay signed in. <strong>Everywhere</strong> also ends your Halka ID session.</p>
+    <div class="cluster">
+        <form method="post" asp-page="/Logout" asp-page-handler="Local" class="inline-form">
+            <button type="submit" class="button button--secondary">Sign out of @client.Name only</button>
+        </form>
+        <form method="post" asp-page="/Logout" asp-page-handler="Global" class="inline-form">
+            <button type="submit" class="button button--danger">Sign out everywhere</button>
+        </form>
+    </div>
+</section>
+@if (Model.ShowTechnicalPanel)
+{
+    <details class="disclosure">
+        <summary>Technical details (development only)</summary>
+        <dl class="facts">
+            <dt>Issuer</dt>
+            <dd><code>@Model.Issuer</code></dd>
+            <dt>Client</dt>
+            <dd><code>@client.ClientId</code></dd>
+            <dt>Flow</dt>
+            <dd>Authorization code with PKCE (S256), server-side token storage</dd>
+        </dl>
+    </details>
+}

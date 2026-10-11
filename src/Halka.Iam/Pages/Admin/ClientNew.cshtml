@@ -1,0 +1,53 @@
+@page "/admin/clients/new"
+@model ClientNewModel
+@{
+    ViewData["Title"] = "Register a client";
+    ViewData["Nav"] = "admin";
+    ViewData["Side"] = "clients";
+}
+<div class="with-sidebar">
+    <partial name="_AdminNav" />
+    <div>
+        <p><a href="/admin/clients">← All clients</a></p>
+        @if (Model.NewSecret is not null)
+        {
+            <h1>Client registered</h1>
+            <div class="alert alert--success" role="status"><p>The client <code>@Model.Form.ClientId</code> was registered.</p></div>
+            <partial name="_NewSecret" model="Model.NewSecret" />
+            <p><a class="button" asp-page="/Admin/ClientDetail" asp-route-clientId="@Model.Form.ClientId">Open the registration</a></p>
+        }
+        else
+        {
+            <h1>Register a client</h1>
+            @if (Model.Errors.Count > 0)
+            {
+                <div class="alert alert--error" role="alert">
+                    <ul>
+                        @foreach (var error in Model.Errors)
+                        {
+                            <li>@error</li>
+                        }
+                    </ul>
+                </div>
+            }
+            <form method="post" asp-page="/Admin/ClientNew" class="panel" novalidate>
+                <div class="field">
+                    <label for="Form_ClientId">Client identifier</label>
+                    <span class="field__hint" id="id-hint">3 to 64 lower-case letters, digits and dashes. It cannot be changed later.</span>
+                    <input id="Form_ClientId" name="Form.ClientId" type="text" maxlength="64" required spellcheck="false" autocomplete="off" value="@Model.Form.ClientId" aria-describedby="id-hint">
+                </div>
+                <div class="field">
+                    <label for="Form_Kind">Kind</label>
+                    <span class="field__hint" id="kind-hint">It cannot be changed later.</span>
+                    <select id="Form_Kind" name="Form.Kind" aria-describedby="kind-hint">
+                        <option value="web" selected="@(Model.Form.Kind == "web")">Web application: users sign in (authorization code with PKCE)</option>
+                        <option value="machine" selected="@(Model.Form.Kind == "machine")">Machine: acts as itself (client credentials)</option>
+                        <option value="resource" selected="@(Model.Form.Kind == "resource")">Resource server: validates tokens (introspection)</option>
+                    </select>
+                </div>
+                <partial name="_ClientFields" model="Model" />
+                <button type="submit" class="button">Register client</button>
+            </form>
+        }
+    </div>
+</div>

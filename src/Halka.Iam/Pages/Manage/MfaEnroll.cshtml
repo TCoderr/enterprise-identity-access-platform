@@ -1,0 +1,71 @@
+@page "/manage/mfa/enroll"
+@model MfaEnrollModel
+@{
+    ViewData["Title"] = "Set up an authenticator app";
+    ViewData["Nav"] = "account";
+    ViewData["Side"] = "mfa";
+}
+<div class="with-sidebar">
+    <partial name="_ManageNav" />
+    <div>
+        @if (Model.NewCodes.Count > 0)
+        {
+            <h1>Two-step sign-in is on</h1>
+            <div class="alert alert--success" role="status"><p>Your authenticator app is connected. Your other sessions were signed out.</p></div>
+            <section class="panel" aria-labelledby="codes-heading">
+                <h2 class="panel__title" id="codes-heading">Recovery codes</h2>
+                <div class="alert alert--warning" role="alert">
+                    <p>Save these codes now. They are shown only this once. Each code signs you in one time if you lose your device.</p>
+                </div>
+                <ul class="code-list" id="recovery-codes" data-testid="recovery-codes">
+                    @foreach (var code in Model.NewCodes)
+                    {
+                        <li>@code</li>
+                    }
+                </ul>
+                <div class="cluster no-print">
+                    <button type="button" class="button button--secondary" data-copy-from="recovery-codes" data-copy-status="copy-status" hidden>Copy codes</button>
+                    <button type="button" class="button button--secondary" data-print hidden>Print</button>
+                    <span id="copy-status" role="status" class="muted"></span>
+                </div>
+            </section>
+            <p><a class="button" href="/manage/mfa">Done</a></p>
+        }
+        else
+        {
+            <h1>Set up an authenticator app</h1>
+            @if (Model.ErrorMessage is not null)
+            {
+                <div class="alert alert--error" role="alert" id="enroll-error"><p>@Model.ErrorMessage</p></div>
+            }
+            <section class="panel" aria-labelledby="step1-heading">
+                <h2 class="panel__title" id="step1-heading">1. Add Halka ID to your app</h2>
+                <p>Scan the QR code with an authenticator app, or enter the key by hand.</p>
+                <img class="qr" src="@Model.QrDataUri" width="200" height="200" alt="QR code that adds Halka ID to an authenticator app. The same information is available as the setup key below.">
+                <dl class="facts">
+                    <dt>Setup key</dt>
+                    <dd><code id="totp-secret" data-testid="totp-secret">@Model.Secret</code></dd>
+                    <dt>Type</dt>
+                    <dd>Time based, 6 digits, 30 seconds</dd>
+                </dl>
+                <p class="muted">The key is shown only during setup. It is generated on this server and is not sent anywhere else.</p>
+            </section>
+            <section class="panel" aria-labelledby="step2-heading">
+                <h2 class="panel__title" id="step2-heading">2. Confirm with a code</h2>
+                <p>Two-step sign-in is turned on only after a valid code from the app.</p>
+                <form method="post" asp-page="/Manage/MfaEnroll" novalidate>
+                    <div class="field">
+                        <label for="code">Authentication code</label>
+                        <input id="code" name="code" type="text" class="input--code" inputmode="numeric" autocomplete="one-time-code" maxlength="9" required data-code="totp"
+                               aria-describedby="@(Model.ErrorMessage is null ? null : "enroll-error")">
+                    </div>
+                    <button type="submit" class="button">Turn on two-step sign-in</button>
+                </form>
+            </section>
+            <form method="post" asp-page="/Manage/MfaEnroll" asp-page-handler="Restart" class="cluster">
+                <button type="submit" class="button button--quiet">Generate a different key</button>
+                <a href="/manage/mfa">Cancel</a>
+            </form>
+        }
+    </div>
+</div>

@@ -1,0 +1,30 @@
+# Build output
+bin/
+obj/
+publish/
+*.user
+.vs/
+.idea/
+
+# Private local material: TLS keys, secrets, Data Protection keys, seed credentials, mail sink
+.local/
+.local-*/
+*.pfx
+*.key
+*.pem
+!docs/**/*.pem
+
+# Node tooling
+node_modules/
+
+# Test and verification output (masked logs and screenshots are kept deliberately under artifacts/verification)
+TestResults/
+artifacts/tmp/
+artifacts/verification/raw/
+playwright-report/
+*.trx
+
+# Environment files
+.env
+.env.*
+!.env.example

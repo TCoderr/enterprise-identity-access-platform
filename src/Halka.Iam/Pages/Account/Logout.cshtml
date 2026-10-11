@@ -1,0 +1,14 @@
+@page "/account/logout"
+@model LogoutModel
+@{
+    ViewData["Title"] = "Sign out";
+    ViewData["Width"] = "page--narrow";
+}
+<h1>Sign out of Halka ID</h1>
+<p>This ends your central session on this browser. Applications that signed you in through Halka ID lose access the next time they check your session.</p>
+<form method="post" asp-page="/Account/Logout">
+    <div class="actions">
+        <button type="submit" class="button">Sign out</button>
+        <a class="button button--secondary" href="/manage">Cancel</a>
+    </div>
+</form>

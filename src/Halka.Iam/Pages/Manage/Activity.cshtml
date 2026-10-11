@@ -1,0 +1,45 @@
+@page "/manage/activity"
+@model ActivityModel
+@{
+    ViewData["Title"] = "Security activity";
+    ViewData["Nav"] = "account";
+    ViewData["Side"] = "activity";
+}
+<div class="with-sidebar">
+    <partial name="_ManageNav" />
+    <div>
+        <h1>Security activity</h1>
+        <p>The most recent security events of your account. Network addresses are not recorded.</p>
+        @if (Model.Entries.Count == 0)
+        {
+            <p class="empty">No activity yet.</p>
+        }
+        else
+        {
+            <div class="table-wrap">
+                <table class="data">
+                    <caption>Last @Model.Entries.Count events</caption>
+                    <thead>
+                    <tr>
+                        <th scope="col">When</th>
+                        <th scope="col">Event</th>
+                        <th scope="col">Result</th>
+                        <th scope="col">Detail</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var entry in Model.Entries)
+                    {
+                        <tr>
+                            <td data-label="When"><time datetime="@entry.OccurredAt.ToString("O")">@entry.OccurredAt.ToString("yyyy-MM-dd HH:mm:ss") UTC</time></td>
+                            <td data-label="Event"><code>@entry.Action</code></td>
+                            <td data-label="Result"><span class="badge @(entry.Outcome == "success" ? "badge--ok" : "badge--warn")">@entry.Outcome</span></td>
+                            <td data-label="Detail">@entry.Reason</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

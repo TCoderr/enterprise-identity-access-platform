@@ -1,0 +1,67 @@
+@page "/workspace"
+@model WorkspaceModel
+@inject IOptions<DemoClientOptions> ClientOptions
+@{
+    var client = ClientOptions.Value;
+    ViewData["Title"] = "Workspace";
+    ViewData["Nav"] = "workspace";
+    ViewData["Width"] = "page--medium";
+}
+<h1>Workspace</h1>
+<p>@client.Name calls the protected Workspace API on your behalf. The API checks the token with Halka ID on every call.</p>
+@if (Model.Result is { } result)
+{
+    <div class="alert @(result.Succeeded ? "alert--success" : "alert--error")" role="@(result.Succeeded ? "status" : "alert")" data-testid="api-result">
+        <p><strong>@result.Operation:</strong> <span data-testid="api-status">@(result.StatusCode == 0 ? "no response" : result.StatusCode.ToString())</span></p>
+        <p>@result.Summary</p>
+    </div>
+    @if (result.Notes.Count > 0)
+    {
+        <div class="table-wrap">
+            <table class="data">
+                <caption>Notes returned by the API</caption>
+                <thead>
+                <tr>
+                    <th scope="col">Note</th>
+                    <th scope="col">Added</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var note in result.Notes)
+                {
+                    <tr>
+                        <td data-label="Note">@note.Text</td>
+                        <td data-label="Added"><time datetime="@note.CreatedAt.ToString("O")">@note.CreatedAt.ToString("yyyy-MM-dd HH:mm") UTC</time></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+<section class="panel" aria-labelledby="read-heading">
+    <h2 class="panel__title" id="read-heading">Read</h2>
+    <div class="cluster">
+        <form method="post" asp-page-handler="Load" class="inline-form">
+            <button type="submit" class="button">Load notes</button>
+        </form>
+        <form method="post" asp-page-handler="Sensitive" class="inline-form">
+            <button type="submit" class="button button--secondary">Load sensitive notes</button>
+        </form>
+    </div>
+    <p class="muted">Sensitive notes need a recent sign-in with multi-factor authentication.</p>
+</section>
+<section class="panel" aria-labelledby="write-heading">
+    <h2 class="panel__title" id="write-heading">Write</h2>
+    @if (!Model.CanWrite)
+    {
+        <p class="muted">@client.Name is registered without the permission to add notes. The request below is still sent, so you can see the API refuse it.</p>
+    }
+    <form method="post" asp-page-handler="Add">
+        <div class="field">
+            <label asp-for="NoteText">Note</label>
+            <input asp-for="NoteText" type="text" maxlength="280" autocomplete="off">
+        </div>
+        <button type="submit" class="button">Add note</button>
+    </form>
+</section>

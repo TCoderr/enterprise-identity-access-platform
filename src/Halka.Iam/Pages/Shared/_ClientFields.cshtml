@@ -1,0 +1,39 @@
+@model Halka.Iam.Pages.Admin.ClientFormPage
+@{
+    var kind = Model.Form.Kind;
+}
+<div class="field">
+    <label for="Form_DisplayName">Display name</label>
+    <span class="field__hint" id="display-hint">Shown to users on the consent screen.</span>
+    <input id="Form_DisplayName" name="Form.DisplayName" type="text" maxlength="100" required value="@Model.Form.DisplayName" aria-describedby="display-hint">
+</div>
+<div class="field">
+    <label for="Form_RedirectUris">Redirect URIs</label>
+    <span class="field__hint" id="redirect-hint">One per line. Absolute https addresses, compared exactly: no wildcards, no fragments. Web clients only.</span>
+    <textarea id="Form_RedirectUris" name="Form.RedirectUris" rows="3" spellcheck="false" aria-describedby="redirect-hint">@Model.Form.RedirectUris</textarea>
+</div>
+<div class="field">
+    <label for="Form_PostLogoutRedirectUris">Post-logout redirect URIs</label>
+    <span class="field__hint" id="logout-hint">One per line. Where the browser may return after signing out. Web clients only.</span>
+    <textarea id="Form_PostLogoutRedirectUris" name="Form.PostLogoutRedirectUris" rows="2" spellcheck="false" aria-describedby="logout-hint">@Model.Form.PostLogoutRedirectUris</textarea>
+</div>
+<fieldset>
+    <legend>Allowed scopes</legend>
+    <p class="field__hint">The client can never obtain a scope that is not ticked here. Machine clients cannot have identity scopes.</p>
+    @foreach (var scope in Model.AvailableScopes)
+    {
+        <label class="check">
+            <input type="checkbox" name="Form.Scopes" value="@scope" checked="@Model.Form.Scopes.Contains(scope)">
+            <span><code>@scope</code></span>
+        </label>
+    }
+</fieldset>
+<div class="field">
+    <label for="Form_ConsentType">Consent</label>
+    <span class="field__hint" id="consent-hint">Applies to web clients.</span>
+    <select id="Form_ConsentType" name="Form.ConsentType" aria-describedby="consent-hint">
+        <option value="explicit" selected="@(Model.Form.ConsentType == "explicit")">Ask once and remember (explicit)</option>
+        <option value="systematic" selected="@(Model.Form.ConsentType == "systematic")">Ask every time (systematic)</option>
+        <option value="implicit" selected="@(Model.Form.ConsentType == "implicit")">First-party, never ask (implicit)</option>
+    </select>
+</div>

@@ -1,0 +1,71 @@
+# Not executed as part of local verification: this repository was not pushed. A local run is not a remote CI result.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: "1"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: src/Halka.Iam/ui-tooling/package-lock.json
+
+      - name: Restore (locked)
+        run: dotnet restore Halka.slnx --locked-mode
+
+      - name: Build (Release)
+        run: dotnet build Halka.slnx -c Release --no-restore
+
+      - name: UI tooling (typecheck, lint, script tests)
+        working-directory: src/Halka.Iam/ui-tooling
+        run: |
+          npm ci
+          npm run check
+
+      - name: Unit tests
+        run: dotnet test --project tests/Halka.UnitTests -c Release --no-build
+
+      - name: Integration tests (Testcontainers PostgreSQL)
+        run: dotnet test --project tests/Halka.IntegrationTests -c Release --no-build
+
+      - name: Browser tests (installed Chrome)
+        run: dotnet test --project tests/Halka.E2E -c Release --no-build
+
+      - name: Vulnerable packages
+        run: dotnet list Halka.slnx package --vulnerable --include-transitive
+
+  images:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    needs: build-and-test
+    strategy:
+      matrix:
+        project: [Halka.Iam, Halka.Migrator, Halka.Pano, Halka.Rapor, Halka.WorkspaceApi, Halka.MachineDemo]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -f deploy/Dockerfile --build-arg PROJECT=${{ matrix.project }} -t halka-ci-${{ matrix.project }} .

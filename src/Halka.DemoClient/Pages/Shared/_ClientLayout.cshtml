@@ -1,0 +1,52 @@
+@inject IOptions<DemoClientOptions> ClientOptions
+@{
+    var client = ClientOptions.Value;
+    var signedIn = User.Identity?.IsAuthenticated == true;
+    var nav = ViewData["Nav"] as string;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <meta name="robots" content="noindex">
+    <title>@ViewData["Title"] · @client.Name</title>
+    <link rel="icon" href="/assets/favicon-@(client.Slug).svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/assets/site.css">
+</head>
+<body class="@client.Theme">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+    <div class="site-header__inner">
+        <a class="brand" href="/"><span class="brand__mark" aria-hidden="true">@client.Name[..1]</span><span>@client.Name</span></a>
+        <nav class="site-nav" aria-label="Primary">
+            <a href="/" aria-current="@(nav == "home" ? "page" : null)">Home</a>
+            @if (signedIn)
+            {
+                <a href="/workspace" aria-current="@(nav == "workspace" ? "page" : null)">Workspace</a>
+                <a href="/session" aria-current="@(nav == "session" ? "page" : null)">Session</a>
+            }
+        </nav>
+        <div class="site-header__session">
+            @if (signedIn)
+            {
+                <span class="badge badge--ok" data-testid="session-badge">Signed in to @client.Name</span>
+                <span class="site-header__who">@User.Identity!.Name</span>
+            }
+            else
+            {
+                <span class="badge" data-testid="session-badge">Not signed in to @client.Name</span>
+                <a class="button button--small" href="/login">Sign in with Halka ID</a>
+            }
+        </div>
+    </div>
+</header>
+<main id="main" class="page @(ViewData["Width"] as string)">
+    @RenderBody()
+</main>
+<footer class="site-footer">
+    <p>@client.Name · demo application that signs in through Halka ID. It has its own session, separate from Halka ID and from the other demo application.</p>
+</footer>
+</body>
+</html>

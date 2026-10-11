@@ -1,0 +1,64 @@
+@page "/manage/sessions"
+@model SessionsModel
+@{
+    ViewData["Title"] = "Sessions";
+    ViewData["Nav"] = "account";
+    ViewData["Side"] = "sessions";
+}
+<div class="with-sidebar">
+    <partial name="_ManageNav" />
+    <div>
+        <h1>Sessions</h1>
+        <p>These are the browsers that are signed in to Halka ID with your account. Ending a session also removes the access of applications that were opened from it.</p>
+        @if (Model.Result is not null)
+        {
+            <div class="alert alert--success" role="status"><p>@Model.Result</p></div>
+        }
+        <div class="table-wrap">
+            <table class="data">
+                <caption>Active central sessions</caption>
+                <thead>
+                <tr>
+                    <th scope="col">Device</th>
+                    <th scope="col">Signed in</th>
+                    <th scope="col">Last active</th>
+                    <th scope="col">Methods</th>
+                    <th scope="col"><span class="visually-hidden">Actions</span></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td data-label="Device">
+                            @item.ClientLabel
+                            @if (item.IsCurrent)
+                            {
+                                <span class="badge badge--ok">This browser</span>
+                            }
+                        </td>
+                        <td data-label="Signed in"><time datetime="@item.AuthTime.ToString("O")">@item.AuthTime.ToString("yyyy-MM-dd HH:mm") UTC</time></td>
+                        <td data-label="Last active"><time datetime="@item.LastSeenAt.ToString("O")">@item.LastSeenAt.ToString("yyyy-MM-dd HH:mm") UTC</time></td>
+                        <td data-label="Methods">@item.Amr</td>
+                        <td>
+                            <form method="post" asp-page-handler="Revoke" class="inline-form">
+                                <input type="hidden" name="id" value="@item.Id">
+                                <button type="submit" class="button button--secondary button--small">
+                                    @(item.IsCurrent ? "Sign out" : "End session")<span class="visually-hidden"> on @item.ClientLabel, signed in @item.AuthTime.ToString("yyyy-MM-dd HH:mm")</span>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <section class="panel" aria-labelledby="everywhere-heading">
+            <h2 class="panel__title" id="everywhere-heading">Sign out everywhere</h2>
+            <p>Ends every central session of your account, including this one, and revokes the access of all applications.</p>
+            <form method="post" asp-page-handler="RevokeAll">
+                <button type="submit" class="button button--danger">Sign out everywhere</button>
+            </form>
+        </section>
+    </div>
+</div>

@@ -1,0 +1,45 @@
+@page "/admin"
+@model IndexModel
+@{
+    ViewData["Title"] = "Administration";
+    ViewData["Nav"] = "admin";
+    ViewData["Side"] = "dashboard";
+}
+<div class="with-sidebar">
+    <partial name="_AdminNav" />
+    <div>
+        <h1>Administration</h1>
+        <ul class="stats">
+            <li><strong>@Model.UserCount</strong> accounts</li>
+            <li><strong>@Model.ActiveSessionCount</strong> active sessions</li>
+            <li><strong>@Model.ActiveGrantCount</strong> active grants</li>
+            <li><strong>@Model.PendingMailCount</strong> queued demo mails</li>
+        </ul>
+        <section class="panel" aria-labelledby="you-heading">
+            <h2 class="panel__title" id="you-heading">Your administrative session</h2>
+            <dl class="facts">
+                <dt>Roles</dt>
+                <dd>
+                    @foreach (var role in Model.Session.Roles)
+                    {
+                        <span class="badge">@role</span>
+                    }
+                </dd>
+                <dt>Sign-in methods</dt>
+                <dd>@string.Join(", ", Model.Session.Amr)</dd>
+                <dt>Sensitive actions</dt>
+                <dd>
+                    @if (Model.StepUpFresh)
+                    {
+                        <span class="badge badge--ok">Confirmed recently</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge--warn">Will ask for your authenticator code</span>
+                    }
+                </dd>
+            </dl>
+            <p class="muted">Changes such as disabling accounts, rotating secrets or keys ask you to confirm with your authenticator when the last confirmation is older than @Model.StepUpMinutes minutes.</p>
+        </section>
+    </div>
+</div>

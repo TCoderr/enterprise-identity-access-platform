@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <RootNamespace>Halka.DemoClient</RootNamespace>
+    <AssemblyName>Halka.DemoClient</AssemblyName>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
+    <!-- Explicit, because the design package below is private: without this the applications that reference this
+         library would resolve the older EF Core that the provider package asks for and fail to load at start. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="EFCore.NamingConventions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Halka.Shared\Halka.Shared.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The Razor SDK does not add the web implicit usings that Microsoft.NET.Sdk.Web provides. -->
+    <Using Include="Microsoft.AspNetCore.Builder" />
+    <Using Include="Microsoft.AspNetCore.Hosting" />
+    <Using Include="Microsoft.AspNetCore.Http" />
+    <Using Include="Microsoft.AspNetCore.Routing" />
+    <Using Include="Microsoft.Extensions.Configuration" />
+    <Using Include="Microsoft.Extensions.DependencyInjection" />
+    <Using Include="Microsoft.Extensions.Hosting" />
+    <Using Include="Microsoft.Extensions.Logging" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Same embedded stylesheet as the identity provider (one design system); each app only differs by its body class. -->
+    <EmbeddedResource Include="..\Halka.Iam\wwwroot\site.css" Link="assets\site.css" LogicalName="Halka.DemoClient.assets.site.css" />
+    <EmbeddedResource Include="assets\favicon-pano.svg" LogicalName="Halka.DemoClient.assets.favicon-pano.svg" />
+    <EmbeddedResource Include="assets\favicon-rapor.svg" LogicalName="Halka.DemoClient.assets.favicon-rapor.svg" />
+  </ItemGroup>
+</Project>

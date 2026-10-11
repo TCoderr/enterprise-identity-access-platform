@@ -1,0 +1,20 @@
+{
+  "name": "halka-iam-ui-tooling",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Type check, lint and unit tests for the small browser scripts of Halka ID. Nothing here is shipped to the browser.",
+  "author": "TCoderr",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "typecheck": "node node_modules/typescript/bin/tsc --project tsconfig.json",
+    "lint": "cd .. && node ui-tooling/node_modules/eslint/bin/eslint.js --config ui-tooling/eslint.config.js --max-warnings 0 wwwroot ui-tooling/tests",
+    "test": "node --test \"tests/**/*.test.js\"",
+    "check": "npm run typecheck && npm run lint && npm run test"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.12.0",
+    "typescript": "7.0.2"
+  }
+}

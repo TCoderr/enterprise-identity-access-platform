@@ -1,0 +1,18 @@
+@page "/connect/endsession"
+@model EndSessionModel
+@{
+    ViewData["Title"] = "Sign out";
+    ViewData["Width"] = "page--narrow";
+}
+<h1>Sign out of Halka ID?</h1>
+<p>An application asked to end your central session. If you continue, this browser is signed out of Halka ID and every application opened from this session loses access on its next request.</p>
+<form method="post" action="/connect/endsession" asp-antiforgery="true">
+    @foreach (var parameter in Model.Parameters)
+    {
+        <input type="hidden" name="@parameter.Key" value="@parameter.Value">
+    }
+    <div class="actions">
+        <button type="submit" class="button" name="@EndSessionModel.DecisionField" value="@EndSessionModel.Confirm">Sign out of Halka ID</button>
+        <a class="button button--secondary" href="/manage">Stay signed in</a>
+    </div>
+</form>

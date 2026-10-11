@@ -1,0 +1,22 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Halka.Shared/Halka.Shared.csproj" />
+    <Project Path="src/Halka.Iam/Halka.Iam.csproj" />
+    <Project Path="src/Halka.Migrator/Halka.Migrator.csproj" />
+    <Project Path="src/Halka.DemoClient/Halka.DemoClient.csproj" />
+    <Project Path="src/Halka.Pano/Halka.Pano.csproj" />
+    <Project Path="src/Halka.Rapor/Halka.Rapor.csproj" />
+    <Project Path="src/Halka.WorkspaceApi/Halka.WorkspaceApi.csproj" />
+    <Project Path="src/Halka.MachineDemo/Halka.MachineDemo.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Halka.LocalInit/Halka.LocalInit.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Halka.TestKit/Halka.TestKit.csproj" />
+    <Project Path="tests/Halka.UnitTests/Halka.UnitTests.csproj" />
+    <Project Path="tests/Halka.IntegrationTests/Halka.IntegrationTests.csproj" />
+    <Project Path="tests/Halka.Smoke/Halka.Smoke.csproj" />
+    <Project Path="tests/Halka.E2E/Halka.E2E.csproj" />
+  </Folder>
+</Solution>

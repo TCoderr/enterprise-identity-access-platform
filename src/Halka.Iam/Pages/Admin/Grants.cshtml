@@ -1,0 +1,53 @@
+@page "/admin/grants"
+@model GrantsModel
+@{
+    ViewData["Title"] = "Grants";
+    ViewData["Nav"] = "admin";
+    ViewData["Side"] = "grants";
+}
+<div class="with-sidebar">
+    <partial name="_AdminNav" />
+    <div>
+        <h1>Grants</h1>
+        <p>A grant is what one session allowed one application to do. Revoking it invalidates every token issued under it immediately (most recent 200 shown).</p>
+        <partial name="_Flash" model="(Model.Notice, (string?)null)" />
+        @if (Model.Items.Count == 0)
+        {
+            <p class="empty">No active grant.</p>
+        }
+        else
+        {
+            <div class="table-wrap">
+                <table class="data">
+                    <caption>Active grants</caption>
+                    <thead>
+                    <tr>
+                        <th scope="col">Account</th>
+                        <th scope="col">Client</th>
+                        <th scope="col">Scopes</th>
+                        <th scope="col">Created</th>
+                        <th scope="col"><span class="visually-hidden">Actions</span></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td data-label="Account"><a asp-page="/Admin/UserDetail" asp-route-id="@item.UserId">@item.Email</a></td>
+                            <td data-label="Client"><code>@item.ClientId</code></td>
+                            <td data-label="Scopes">@item.Scopes</td>
+                            <td data-label="Created"><time datetime="@item.CreatedAt.ToString("O")">@item.CreatedAt.ToString("yyyy-MM-dd HH:mm") UTC</time></td>
+                            <td>
+                                <form method="post" asp-page-handler="Revoke" class="inline-form">
+                                    <input type="hidden" name="id" value="@item.AuthorizationId">
+                                    <button type="submit" class="button button--secondary button--small">Revoke<span class="visually-hidden"> grant of @item.Email for @item.ClientId</span></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

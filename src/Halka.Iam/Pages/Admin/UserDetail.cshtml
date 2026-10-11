@@ -1,0 +1,188 @@
+@page "/admin/users/{id:guid}"
+@model UserDetailModel
+@{
+    ViewData["Title"] = Model.Account.Email;
+    ViewData["Nav"] = "admin";
+    ViewData["Side"] = "users";
+    var account = Model.Account;
+}
+<div class="with-sidebar">
+    <partial name="_AdminNav" />
+    <div>
+        <p><a href="/admin/users">← All users</a></p>
+        <h1>@account.Email</h1>
+        <partial name="_Flash" model="(Model.Notice, Model.Error)" />
+        <section class="panel" aria-labelledby="account-heading">
+            <h2 class="panel__title" id="account-heading">Account</h2>
+            <dl class="facts">
+                <dt>Name</dt>
+                <dd>@account.DisplayName</dd>
+                <dt>Status</dt>
+                <dd>
+                    @if (account.IsDisabled)
+                    {
+                        <span class="badge badge--danger">Disabled</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge--ok">Active</span>
+                    }
+                    @if (account.IsLockedOut)
+                    {
+                        <span class="badge badge--warn">Locked out</span>
+                    }
+                </dd>
+                <dt>Two-step sign-in</dt>
+                <dd>@(account.MfaEnabled ? "On" : "Off")</dd>
+                <dt>Created</dt>
+                <dd><time datetime="@Model.CreatedAt.ToString("O")">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm") UTC</time></dd>
+            </dl>
+            <div class="cluster">
+                @if (account.IsDisabled)
+                {
+                    <form method="post" asp-page-handler="Enable" asp-route-id="@account.Id" class="inline-form">
+                        <button type="submit" class="button button--secondary">Enable account</button>
+                    </form>
+                }
+                else
+                {
+                    <form method="post" asp-page-handler="Disable" asp-route-id="@account.Id" class="inline-form">
+                        <button type="submit" class="button button--danger">Disable account</button>
+                    </form>
+                }
+                @if (account.IsLockedOut)
+                {
+                    <form method="post" asp-page-handler="Unlock" asp-route-id="@account.Id" class="inline-form">
+                        <button type="submit" class="button button--secondary">Clear lockout</button>
+                    </form>
+                }
+                @if (account.MfaEnabled)
+                {
+                    <form method="post" asp-page-handler="ResetMfa" asp-route-id="@account.Id" class="inline-form">
+                        <button type="submit" class="button button--secondary">Remove authenticator</button>
+                    </form>
+                }
+            </div>
+            <p class="muted">Disabling ends every session and revokes every application grant at once. Removing the authenticator is for users who lost their device and recovery codes; it signs them out and is recorded with your name.</p>
+        </section>
+        <section class="panel" aria-labelledby="roles-heading">
+            <h2 class="panel__title" id="roles-heading">Roles</h2>
+            <div class="table-wrap">
+                <table class="data">
+                    <caption class="visually-hidden">Administrative roles</caption>
+                    <thead>
+                    <tr>
+                        <th scope="col">Role</th>
+                        <th scope="col">Assigned</th>
+                        <th scope="col"><span class="visually-hidden">Actions</span></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var role in Model.AssignableRoles)
+                    {
+                        var has = account.Roles.Contains(role);
+                        <tr>
+                            <td data-label="Role">@role</td>
+                            <td data-label="Assigned">@(has ? "Yes" : "No")</td>
+                            <td>
+                                @if (Model.CanManageRoles)
+                                {
+                                    <form method="post" asp-page-handler="Role" asp-route-id="@account.Id" class="inline-form">
+                                        <input type="hidden" name="role" value="@role">
+                                        <input type="hidden" name="grant" value="@(has ? "false" : "true")">
+                                        <button type="submit" class="button button--secondary button--small">@(has ? "Remove" : "Grant")<span class="visually-hidden"> @role</span></button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+            @if (!Model.CanManageRoles)
+            {
+                <p class="muted">Only a PlatformAdmin can change roles.</p>
+            }
+        </section>
+        <section class="panel" aria-labelledby="sessions-heading">
+            <h2 class="panel__title" id="sessions-heading">Active sessions</h2>
+            @if (Model.Sessions.Count == 0)
+            {
+                <p class="muted">No active session.</p>
+            }
+            else
+            {
+                <div class="table-wrap">
+                    <table class="data">
+                        <caption class="visually-hidden">Active central sessions of this account</caption>
+                        <thead>
+                        <tr>
+                            <th scope="col">Device</th>
+                            <th scope="col">Signed in</th>
+                            <th scope="col">Last active</th>
+                            <th scope="col">Methods</th>
+                            <th scope="col"><span class="visually-hidden">Actions</span></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var item in Model.Sessions)
+                        {
+                            <tr>
+                                <td data-label="Device">@item.ClientLabel</td>
+                                <td data-label="Signed in"><time datetime="@item.AuthTime.ToString("O")">@item.AuthTime.ToString("yyyy-MM-dd HH:mm") UTC</time></td>
+                                <td data-label="Last active"><time datetime="@item.LastSeenAt.ToString("O")">@item.LastSeenAt.ToString("yyyy-MM-dd HH:mm") UTC</time></td>
+                                <td data-label="Methods">@item.Amr</td>
+                                <td>
+                                    <form method="post" asp-page-handler="RevokeSession" asp-route-id="@account.Id" class="inline-form">
+                                        <input type="hidden" name="sessionId" value="@item.Id">
+                                        <button type="submit" class="button button--secondary button--small">End session<span class="visually-hidden"> on @item.ClientLabel</span></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+        <section class="panel" aria-labelledby="grants-heading">
+            <h2 class="panel__title" id="grants-heading">Active application grants</h2>
+            @if (Model.Grants.Count == 0)
+            {
+                <p class="muted">No active grant.</p>
+            }
+            else
+            {
+                <div class="table-wrap">
+                    <table class="data">
+                        <caption class="visually-hidden">Active grants of this account</caption>
+                        <thead>
+                        <tr>
+                            <th scope="col">Client</th>
+                            <th scope="col">Scopes</th>
+                            <th scope="col">Created</th>
+                            <th scope="col"><span class="visually-hidden">Actions</span></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var grant in Model.Grants)
+                        {
+                            <tr>
+                                <td data-label="Client"><code>@grant.ClientId</code></td>
+                                <td data-label="Scopes">@grant.Scopes</td>
+                                <td data-label="Created"><time datetime="@grant.CreatedAt.ToString("O")">@grant.CreatedAt.ToString("yyyy-MM-dd HH:mm") UTC</time></td>
+                                <td>
+                                    <form method="post" asp-page-handler="RevokeGrant" asp-route-id="@account.Id" class="inline-form">
+                                        <input type="hidden" name="authorizationId" value="@grant.AuthorizationId">
+                                        <button type="submit" class="button button--secondary button--small">Revoke<span class="visually-hidden"> grant for @grant.ClientId</span></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+    </div>
+</div>

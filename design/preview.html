@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Halka ID · static design preview</title>
+  <!-- Static preview of the design system. It is not connected to any API: the product UI is server-rendered
+       from src/Halka.Iam/Pages and src/Halka.DemoClient/Pages with the same stylesheet. -->
+  <link rel="stylesheet" href="../src/Halka.Iam/wwwroot/site.css">
+</head>
+<body class="app-halka">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="#main"><span class="brand__mark" aria-hidden="true">H</span><span>Halka ID</span></a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="#tokens" aria-current="page">Design preview</a>
+      <a href="#screens">Screens</a>
+    </nav>
+    <div class="site-header__session">
+      <span class="site-header__who">Static preview</span>
+    </div>
+  </div>
+</header>
+<main id="main" class="page">
+  <h1>Halka ID design preview</h1>
+  <p>Static demonstration of the components used by the identity provider and the two demo applications. Nothing on this page talks to a server; buttons do nothing. The running product renders the same components with real data.</p>
+
+  <h2 id="tokens">Identity</h2>
+  <div class="table-wrap">
+    <table class="data">
+      <caption>Three applications, one design system</caption>
+      <thead>
+      <tr><th scope="col">Application</th><th scope="col">Role</th><th scope="col">Accent</th></tr>
+      </thead>
+      <tbody>
+      <tr><td data-label="Application">Halka ID</td><td data-label="Role">Identity provider: sign-in, consent, account, administration</td><td data-label="Accent"><span class="badge badge--accent">steel blue</span></td></tr>
+      <tr><td data-label="Application">Pano</td><td data-label="Role">Demo client A: reads and adds notes</td><td data-label="Accent"><span class="badge badge--ok">green</span></td></tr>
+      <tr><td data-label="Application">Rapor</td><td data-label="Role">Demo client B: read-only</td><td data-label="Accent"><span class="badge badge--warn">brick</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="muted">System fonts only, no external assets, no gradients or glow. Light and dark schemes follow the operating system; motion is limited to a 120 ms opacity change and is disabled when reduced motion is requested.</p>
+
+  <h2>Components</h2>
+  <section class="panel" aria-labelledby="buttons-heading">
+    <h3 class="panel__title" id="buttons-heading">Buttons and badges</h3>
+    <div class="cluster">
+      <button type="button" class="button">Primary</button>
+      <button type="button" class="button button--secondary">Secondary</button>
+      <button type="button" class="button button--danger">Destructive</button>
+      <button type="button" class="button button--quiet">Quiet</button>
+      <button type="button" class="button" disabled>Disabled</button>
+    </div>
+    <p class="cluster">
+      <span class="badge">neutral</span>
+      <span class="badge badge--ok">active</span>
+      <span class="badge badge--warn">retiring</span>
+      <span class="badge badge--danger">revoked</span>
+      <span class="badge badge--accent">pwd</span>
+    </p>
+  </section>
+  <section class="panel" aria-labelledby="feedback-heading">
+    <h3 class="panel__title" id="feedback-heading">Feedback</h3>
+    <div class="alert alert--success" role="status"><p>The session was ended. Applications opened from it lose access on their next request.</p></div>
+    <div class="alert alert--error" role="alert"><p>The e-mail address or password is not correct, or the account cannot sign in right now.</p></div>
+    <div class="alert alert--warning" role="alert"><p><strong>Copy this secret now.</strong> It is shown only in this response.</p></div>
+    <div class="alert alert--info" role="status"><p>The application asked you to sign in again to continue.</p></div>
+  </section>
+
+  <h2 id="screens">Screen skeletons</h2>
+  <div class="with-sidebar">
+    <nav class="side-nav" aria-label="Preview sections">
+      <ul>
+        <li><a href="#signin" aria-current="page">Sign in</a></li>
+        <li><a href="#code">Second step</a></li>
+        <li><a href="#consent">Consent</a></li>
+        <li><a href="#secret">One-time secret</a></li>
+        <li><a href="#sessions">Sessions</a></li>
+      </ul>
+    </nav>
+    <div>
+      <section class="panel" id="signin" aria-labelledby="signin-heading">
+        <h3 class="panel__title" id="signin-heading">Sign in</h3>
+        <form>
+          <div class="field">
+            <label for="preview-email">E-mail address</label>
+            <input id="preview-email" type="email" autocomplete="off" value="alice@halka.test">
+          </div>
+          <div class="field">
+            <label for="preview-password">Password</label>
+            <input id="preview-password" type="password" autocomplete="off">
+          </div>
+          <button type="button" class="button">Sign in</button>
+        </form>
+      </section>
+      <section class="panel" id="code" aria-labelledby="code-heading">
+        <h3 class="panel__title" id="code-heading">Second step</h3>
+        <div class="field">
+          <label for="preview-code">Authentication code</label>
+          <span class="field__hint">Six digits. You can paste the code; spaces are ignored.</span>
+          <input id="preview-code" type="text" class="input--code" inputmode="numeric" maxlength="9" value="123456">
+        </div>
+        <button type="button" class="button">Verify</button>
+      </section>
+      <section class="panel" id="consent" aria-labelledby="consent-heading">
+        <h3 class="panel__title" id="consent-heading">Consent</h3>
+        <p><strong>Rapor</strong> wants to access your Halka ID account.</p>
+        <ul class="scope-list">
+          <li><strong>Sign you in</strong><span class="muted">Confirm who you are with a stable account identifier.</span></li>
+          <li><strong>Read workspace notes</strong><span class="muted">Read the notes of the demo workspace on your behalf.</span></li>
+        </ul>
+        <div class="actions">
+          <button type="button" class="button">Allow</button>
+          <button type="button" class="button button--secondary">Deny</button>
+        </div>
+      </section>
+      <section class="panel" id="secret" aria-labelledby="secret-heading">
+        <h3 class="panel__title" id="secret-heading">One-time secret</h3>
+        <div class="alert alert--warning" role="alert"><p>Shown once. Only a hash is stored.</p></div>
+        <p class="secret-box">example-only-not-a-real-secret-0000000000000</p>
+        <ul class="code-list">
+          <li>ABCD-EFGH-IJKL-MNOP</li>
+          <li>QRST-UVWX-YZ23-4567</li>
+        </ul>
+      </section>
+      <section class="panel" id="sessions" aria-labelledby="sessions-heading">
+        <h3 class="panel__title" id="sessions-heading">Sessions</h3>
+        <div class="table-wrap">
+          <table class="data">
+            <caption>Active central sessions</caption>
+            <thead>
+            <tr><th scope="col">Device</th><th scope="col">Signed in</th><th scope="col">Methods</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr>
+            </thead>
+            <tbody>
+            <tr>
+              <td data-label="Device">Chrome on Windows <span class="badge badge--ok">This browser</span></td>
+              <td data-label="Signed in">2026-10-11 09:30 UTC</td>
+              <td data-label="Methods">pwd otp mfa</td>
+              <td><button type="button" class="button button--secondary button--small">Sign out</button></td>
+            </tr>
+            <tr>
+              <td data-label="Device">Safari on iOS</td>
+              <td data-label="Signed in">2026-10-10 18:02 UTC</td>
+              <td data-label="Methods">pwd</td>
+              <td><button type="button" class="button button--secondary button--small">End session</button></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <dl class="facts">
+          <dt>Key identifier</dt>
+          <dd><code>TwpBZ1qyRT6SOq0Cit61dkoiwRIr-xMruDnbN-bYsQU</code></dd>
+          <dt>State</dt>
+          <dd><span class="badge badge--ok">active</span></dd>
+        </dl>
+      </section>
+    </div>
+  </div>
+</main>
+<footer class="site-footer">
+  <p>Halka ID · static design preview by TCoderr. Not connected to any service.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,46 @@
+@page "/account/register"
+@model RegisterModel
+@{
+    ViewData["Title"] = "Create an account";
+    ViewData["Width"] = "page--narrow";
+}
+<h1>Create an account</h1>
+@if (Model.Sent)
+{
+    <div class="alert alert--success" role="status">
+        <p><strong>Check the demo mail sink.</strong></p>
+        <p>If this address can be registered, a confirmation link was written to the private mail sink of this installation. No real e-mail is sent.</p>
+    </div>
+    <p><a href="/account/login">Go to sign in</a></p>
+}
+else
+{
+    @if (Model.Errors.Count > 0)
+    {
+        <div class="alert alert--error" role="alert" id="register-error">
+            <ul>
+                @foreach (var error in Model.Errors)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    }
+    <form method="post" asp-page="/Account/Register" class="panel" novalidate>
+        <div class="field">
+            <label asp-for="Input.DisplayName">Name</label>
+            <input asp-for="Input.DisplayName" type="text" autocomplete="name" required maxlength="100">
+        </div>
+        <div class="field">
+            <label asp-for="Input.Email">E-mail address</label>
+            <input asp-for="Input.Email" type="email" autocomplete="username" inputmode="email" required>
+        </div>
+        <div class="field">
+            <label asp-for="Input.Password">Password</label>
+            <span class="field__hint" id="password-hint">At least 12 characters. A long passphrase works well.</span>
+            <input asp-for="Input.Password" type="password" autocomplete="new-password" required aria-describedby="password-hint">
+        </div>
+        <button type="submit" class="button button--block">Create account</button>
+    </form>
+    <p><a href="/account/login">Already have an account? Sign in</a></p>
+}

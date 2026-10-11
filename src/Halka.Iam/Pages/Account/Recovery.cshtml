@@ -1,0 +1,25 @@
+@page "/account/recovery"
+@model RecoveryModel
+@{
+    ViewData["Title"] = "Use a recovery code";
+    ViewData["Width"] = "page--narrow";
+}
+<h1>Use a recovery code</h1>
+<p>Enter one of the recovery codes you saved when you set up two-step sign-in. Each code works once.</p>
+@if (Model.ErrorMessage is not null)
+{
+    <div class="alert alert--error" role="alert" id="recovery-error"><p>@Model.ErrorMessage</p></div>
+}
+<form method="post" asp-page="/Account/Recovery" asp-route-returnUrl="@Model.ReturnUrl" class="panel" novalidate>
+    <div class="field">
+        <label asp-for="Code">Recovery code</label>
+        <span class="field__hint" id="recovery-hint">Sixteen letters and digits, for example ABCD-EFGH-IJKL-MNOP.</span>
+        <input asp-for="Code" type="text" class="input--recovery" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24" required autofocus
+               data-code="recovery" aria-describedby="recovery-hint @(Model.ErrorMessage is null ? null : "recovery-error")">
+    </div>
+    <button type="submit" class="button button--block">Verify</button>
+</form>
+<p class="cluster">
+    <a asp-page="/Account/Mfa" asp-route-returnUrl="@Model.ReturnUrl">Use the authenticator app instead</a>
+    <a href="/account/login">Start again</a>
+</p>
