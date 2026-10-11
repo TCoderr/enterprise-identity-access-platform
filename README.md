@@ -1,53 +1,55 @@
+**English** · [Türkçe](README.tr.md)
+
 # Halka ID — Enterprise Identity & Access Management Platform
 
-**Yazar / sahip:** TCoderr
+**Author / owner:** TCoderr
 
-Halka ID; merkezi kimlik sağlayıcı (OpenID Provider), OAuth 2.0 / OpenID Connect yetkilendirme sunucusu, iki
-demo uygulama arasında tek oturum açma (SSO), çok faktörlü doğrulama (TOTP + kurtarma kodları), uygulama (client)
-kaydı, kullanıcı onayı (consent), oturum / grant / token iptali ve yönetim arayüzünü tek bir yerel yığında
-gösteren bir C# / .NET 10 portföy projesidir.
+Halka ID is a C# / .NET 10 portfolio project that demonstrates, in a single local stack, a central identity provider
+(OpenID Provider), an OAuth 2.0 / OpenID Connect authorization server, single sign-on (SSO) across two demo
+applications, multi-factor authentication (TOTP + recovery codes), application (client) registration, user consent,
+session / grant / token revocation, and an administration UI.
 
-> **Durum ve dürüst sınır.** Bu bir portföy / referans uygulamasıdır. Yerelde uçtan uca doğrulanmıştır
-> (`docs/final-verification.md`), ancak üretim ortamında çalıştırılmamış, bağımsız güvenlik denetiminden
-> geçmemiş ve OpenID Foundation uyumluluk (conformance) paketiyle sınanmamıştır; "sertifikalı" veya "üretime
-> hazır" iddiası yoktur. Bilinen sınırlar: `docs/known-limitations.md`.
+> **Status and honest limits.** This is a portfolio / reference application. It has been verified end to end locally
+> (`docs/final-verification.md`), but it has not been run in a production environment, has not undergone an
+> independent security audit, and has not been tested with the OpenID Foundation conformance suite; it makes no claim
+> of being "certified" or "production-ready". Known limitations: `docs/known-limitations.md`.
 
-## Bileşenler
+## Components
 
-| Bileşen | Adres (yerel) | Görev |
+| Component | Address (local) | Role |
 |---|---|---|
-| **Halka ID** (`src/Halka.Iam`) | `https://id.halka.localhost:9443` | Kimlik sağlayıcı, hesap ve yönetim arayüzü, protokol uç noktaları |
-| **Pano** (`src/Halka.Pano`) | `https://pano.localhost:9444` | Demo istemci 1 (sunucu taraflı oturum, BFF) |
-| **Rapor** (`src/Halka.Rapor`) | `https://rapor.localhost:9445` | Demo istemci 2 (farklı site; SSO kanıtı) |
-| **Workspace API** (`src/Halka.WorkspaceApi`) | `https://workspace-api.localhost:9446` | Korunan kaynak API (introspection) |
-| **Machine demo** (`src/Halka.MachineDemo`) | — | `client_credentials` ile API çağıran konsol istemcisi |
-| **Migrator** (`src/Halka.Migrator`) | — | Şema, kısıtlı DB rolleri, seed (tek seferlik konteyner) |
-| PostgreSQL 17 | yalnız iç ağ | Kimlik, oturum, grant, token, denetim kaydı |
+| **Halka ID** (`src/Halka.Iam`) | `https://id.halka.localhost:9443` | Identity provider, account and administration UI, protocol endpoints |
+| **Pano** (`src/Halka.Pano`) | `https://pano.localhost:9444` | Demo client 1 (server-side session, BFF) |
+| **Rapor** (`src/Halka.Rapor`) | `https://rapor.localhost:9445` | Demo client 2 (a different site; proof of SSO) |
+| **Workspace API** (`src/Halka.WorkspaceApi`) | `https://workspace-api.localhost:9446` | Protected resource API (introspection) |
+| **Machine demo** (`src/Halka.MachineDemo`) | — | Console client that calls the API with `client_credentials` |
+| **Migrator** (`src/Halka.Migrator`) | — | Schema, restricted DB roles, seed (one-shot container) |
+| PostgreSQL 17 | internal network only | Identities, sessions, grants, tokens, audit log |
 
-Teknoloji: ASP.NET Core 10 (Razor Pages), ASP.NET Core Identity, EF Core 10 + Npgsql, **OpenIddict 7.7.2**
-(protokol, token üretimi ve doğrulaması), Otp.NET (TOTP), Docker Compose. Protokol veya kripto elle yazılmamıştır.
+Technology: ASP.NET Core 10 (Razor Pages), ASP.NET Core Identity, EF Core 10 + Npgsql, **OpenIddict 7.7.2**
+(protocol, token issuance and validation), Otp.NET (TOTP), Docker Compose. No protocol or cryptography was written by hand.
 
-## Ön koşullar
+## Prerequisites
 
 - .NET SDK 10.0.401+ (`global.json`)
 - Docker Engine + Compose v2
-- Testler için: Google Chrome (tarayıcı testleri kurulu Chrome'u kullanır), Node.js 24 (yalnız UI araçları)
-- Boş portlar: 9443–9446 (geliştirme), 9453–9456 (smoke testi)
+- For tests: Google Chrome (the browser tests use the installed Chrome), Node.js 24 (UI tooling only)
+- Free ports: 9443–9446 (development), 9453–9456 (smoke test)
 
-Makinede genel bir ayar değiştirilmez: `hosts` dosyası, sistem sertifika deposu ve genel araç kurulumu
-gerekmez. `*.localhost` adlarını tarayıcılar kendiliğinden loopback'e çözer.
+No machine-wide setting is changed: the `hosts` file, the system certificate store and global tool installation are
+not needed. Browsers resolve `*.localhost` names to loopback on their own.
 
-## Hızlı başlangıç
+## Quick start
 
 PowerShell (Windows):
 
 ```powershell
 cd enterprise-identity-access-platform
-./scripts/local-stack.ps1 up        # ilk seferde .local/ üretir, imajları derler, yığını başlatır
+./scripts/local-stack.ps1 up        # on the first run it creates .local/, builds the images and starts the stack
 ./scripts/local-stack.ps1 status
-./scripts/local-stack.ps1 machine   # makine istemcisi demosu (client_credentials → API)
+./scripts/local-stack.ps1 machine   # machine client demo (client_credentials → API)
 ./scripts/local-stack.ps1 logs -Service iam
-./scripts/local-stack.ps1 down      # konteynerleri kaldırır; veri, anahtarlar ve .local/ kalır
+./scripts/local-stack.ps1 down      # removes the containers; data, keys and .local/ are kept
 ```
 
 Bash (Linux / macOS):
@@ -61,74 +63,74 @@ cd enterprise-identity-access-platform
 ./scripts/local-stack.sh down
 ```
 
-`reset` yıkıcıdır (veritabanı volume'u ve `.local/` silinir) ve açık onay ister:
+`reset` is destructive (the database volume and `.local/` are deleted) and asks for explicit confirmation:
 `./scripts/local-stack.ps1 reset -ConfirmProject halka` / `./scripts/local-stack.sh reset --confirm-project halka`.
 
-### Sertifika uyarısı
+### Certificate warning
 
-`init`, yalnız bu proje için bir yerel CA ve sunucu sertifikaları üretir (`.local/tls/`). Sistem deposuna
-eklenmez; bu yüzden tarayıcı ilk açılışta uyarı gösterir. İki seçenek: uyarıyı bu yerel adresler için geçmek ya da
-`.local/tls/ca.crt` dosyasını **yalnız kendi tarayıcı profilinize** güvenilir kök olarak eklemek (kendi
-kararınız; proje bunu sizin yerinize yapmaz).
+`init` creates a local CA and server certificates for this project only (`.local/tls/`). They are not added to the
+system store, which is why the browser shows a warning on first visit. Two options: accept the warning for these local
+addresses, or add `.local/tls/ca.crt` as a trusted root **to your own browser profile only** (your decision; the
+project does not do this for you).
 
-### Anahtarlar ve yeniden başlatma
+### Keys and restarts
 
-Dört ayrı anahtar türü vardır ve birbirinin yerine kullanılmaz: TLS sertifikaları (`.local/tls/`), token imzalama
-ve şifreleme anahtarları (veritabanında, Data Protection ile sarılı), Data Protection anahtarları
-(`.local/dp-keys/`, ayrı bir sarma sertifikasıyla korunur) ve client secret'ları (`.local/secrets/`).
+There are four separate kinds of keys and they are not used in place of one another: TLS certificates (`.local/tls/`),
+token signing and encryption keys (in the database, wrapped with Data Protection), Data Protection keys
+(`.local/dp-keys/`, protected with a separate wrapping certificate) and client secrets (`.local/secrets/`).
 
-- `down` / `up` ve konteyner yeniden başlatmaları hiçbir anahtarı değiştirmez: issuer adresi, imza anahtarı
-  (`kid`), oturumlar ve token'lar aynı kalır (smoke testiyle doğrulanır).
-- `reset` veya `.local/` dizinini silmek **her şeyi yeniden üretir**: tüm oturumlar, token'lar, MFA kayıtları,
-  demo parolaları ve client secret'ları geçersiz olur; tarayıcıya eklenmiş yerel CA da değişir.
-- Port tabanını (`-PortBase`) değiştirmek issuer adresini değiştirir; mevcut bir kurulumda yapılmamalıdır
-  (önce `reset`).
+- `down` / `up` and container restarts do not change any key: the issuer address, the signing key (`kid`), sessions
+  and tokens stay the same (verified by the smoke test).
+- `reset`, or deleting the `.local/` directory, **recreates everything**: all sessions, tokens, MFA enrollments,
+  demo passwords and client secrets become invalid; the local CA added to the browser changes as well.
+- Changing the port base (`-PortBase`) changes the issuer address; it should not be done on an existing installation
+  (`reset` first).
 
-## Demo hesapları ve istemciler
+## Demo accounts and clients
 
-Parolalar ve client secret'lar depoda **yoktur**; `init` her kurulum için rastgele üretir.
+Passwords and client secrets are **not** in the repository; `init` creates random ones for every installation.
 
-| Hesap | Rol | Parola |
+| Account | Role | Password |
 |---|---|---|
 | `admin@halka.test` | PlatformAdmin | `.local/seed/credentials.json` |
 | `secadmin@halka.test` | SecurityAdmin | `.local/seed/credentials.json` |
 | `appadmin@halka.test` | ApplicationAdmin | `.local/seed/credentials.json` |
 | `alice@halka.test` | User | `.local/seed/credentials.json` |
 
-| Client | Tür | Akış | Secret |
+| Client | Type | Flow | Secret |
 |---|---|---|---|
 | `pano-web` | web (confidential) | authorization code + PKCE, refresh | `.local/secrets/client-pano` |
 | `rapor-web` | web (confidential) | authorization code + PKCE, refresh | `.local/secrets/client-rapor` |
-| `workspace-api` | resource | yalnız introspection | `.local/secrets/client-workspace-api` |
+| `workspace-api` | resource | introspection only | `.local/secrets/client-workspace-api` |
 | `ops-machine` | machine | client credentials | `.local/secrets/client-ops-machine` |
 
-Diğer özel yollar: demo e-postaları `.local/mail-sink/` (gerçek e-posta gönderilmez), Data Protection anahtarları
-`.local/dp-keys/`, TLS anahtarları `.local/tls/`. `.local/` git tarafından yok sayılır ve imajlara kopyalanmaz.
+Other private paths: demo emails in `.local/mail-sink/` (no real email is sent), Data Protection keys in
+`.local/dp-keys/`, TLS keys in `.local/tls/`. `.local/` is ignored by git and is not copied into the images.
 
-## Deneme senaryosu
+## Walkthrough
 
-1. `https://pano.localhost:9444` → **Sign in** → Halka ID'de `alice@halka.test` ile giriş → onay ekranı → Pano.
-2. **Workspace** sayfasında API'yi çağırın (Pano erişim token'ını tarayıcıya vermez; çağrıyı sunucudan yapar).
-3. `https://rapor.localhost:9445` → **Sign in**: parola sorulmaz (SSO), yalnız Rapor için onay istenir.
-4. `https://id.halka.localhost:9443/manage`: oturumlar, bağlı uygulamalar, MFA kaydı (QR + kurtarma kodları).
-5. Bir oturumu veya uygulama iznini iptal edin; Pano / Rapor bir sonraki istekte oturumu düşürür.
-6. `admin@halka.test` ile giriş → MFA kaydı zorunludur → `/admin`: kullanıcılar, oturumlar, grant'ler, client
-   kaydı (secret bir kez gösterilir), secret rotasyonu, imza anahtarı rotasyonu, denetim kaydı.
-7. Yeni hesap: **Create account** → onay bağlantısı `.local/mail-sink/` altındaki JSON dosyasındadır.
+1. `https://pano.localhost:9444` → **Sign in** → log in at Halka ID as `alice@halka.test` → consent screen → Pano.
+2. Call the API on the **Workspace** page (Pano does not give the access token to the browser; it makes the call from the server).
+3. `https://rapor.localhost:9445` → **Sign in**: no password is asked for (SSO), only consent for Rapor is requested.
+4. `https://id.halka.localhost:9443/manage`: sessions, connected applications, MFA enrollment (QR + recovery codes).
+5. Revoke a session or an application's consent; Pano / Rapor drop the session on the next request.
+6. Log in as `admin@halka.test` → MFA enrollment is mandatory → `/admin`: users, sessions, grants, client
+   registration (the secret is shown once), secret rotation, signing key rotation, audit log.
+7. New account: **Create account** → the confirmation link is in the JSON file under `.local/mail-sink/`.
 
-## Test ve doğrulama
+## Tests and verification
 
 ```powershell
 dotnet restore Halka.slnx --locked-mode
-./scripts/test.ps1 -Project Unit           # birim testleri
-./scripts/test.ps1 -Project Integration    # gerçek Kestrel + Testcontainers PostgreSQL, protokol/güvenlik
-./scripts/test.ps1 -Project E2E            # kurulu Chrome ile gerçek tarayıcı, axe erişilebilirlik
-./scripts/smoke.ps1                        # ayrı Compose projesinde HTTPS, yeniden başlatma, DB/OP kesintisi
-./scripts/scan.ps1                         # sır / yazarlık / bağımlılık / konteyner taraması
-./scripts/verify.ps1                       # yukarıdakilerin tümü, tek kaynak durumu üzerinde
+./scripts/test.ps1 -Project Unit           # unit tests
+./scripts/test.ps1 -Project Integration    # real Kestrel + Testcontainers PostgreSQL, protocol/security
+./scripts/test.ps1 -Project E2E            # real browser with the installed Chrome, axe accessibility
+./scripts/smoke.ps1                        # HTTPS, restarts, DB/OP outage in a separate Compose project
+./scripts/scan.ps1                         # secret / authorship / dependency / container scan
+./scripts/verify.ps1                       # all of the above, on a single source state
 ```
 
-Linux / CI eşdeğeri (`.github/workflows/ci.yml` ile aynı adımlar; bu depo uzak bir CI'da **çalıştırılmamıştır**):
+Linux / CI equivalent (the same steps as `.github/workflows/ci.yml`):
 
 ```bash
 dotnet restore Halka.slnx --locked-mode
@@ -139,41 +141,52 @@ dotnet test --project tests/Halka.E2E -c Release --no-build
 (cd src/Halka.Iam/ui-tooling && npm ci && npm run check)
 ```
 
-Testler yalnız kendi oluşturdukları atılabilir veritabanlarına yazar (açık izin + sahiplik işareti + sunucu
-kimliği kontrolü); geliştirme yığınına veya başka bir projenin veritabanına dokunmaz.
+Tests write only to disposable databases they create themselves (explicit permission + ownership marker + server
+identity check); they do not touch the development stack or another project's database.
 
-## Depo yapısı
+Remote CI: [GitHub Actions](https://github.com/TCoderr/enterprise-identity-access-platform/actions). As of 2026-10-12 (UTC+3), the first
+remote run (commit `a54c41a`) **failed** in the `images` (image build) job and fixes are in progress; no passing remote run is claimed
+here, and the Actions page shows the current state. Local results are not remote CI results.
+
+The results and source fingerprints in `docs/final-verification.md` belong to the source state that was used during the local
+verification; the report was written before the repository was pushed, and its "remote CI was not run" statement describes that moment.
+The later translation of this README into English (`README.md` in English, the Turkish text in `README.tr.md`) is a documentation-only
+change. Even so, because the fingerprint script excludes only the `docs/` and `artifacts/` directories, these files are in scope and the
+fingerprint of the current tree is not the same as the recorded values. The tests were not re-run after the translation; the recorded
+results are not results obtained on the current fingerprint.
+
+## Repository structure
 
 ```
-src/Halka.Iam            kimlik sağlayıcı (Razor Pages, protokol, oturum, MFA, yönetim)
-src/Halka.DemoClient     Pano ve Rapor'un ortak istemci kitaplığı (OIDC, sunucu taraflı oturum)
-src/Halka.Pano, Rapor    demo istemciler
-src/Halka.WorkspaceApi   korunan API
-src/Halka.MachineDemo    makine istemcisi
-src/Halka.Migrator       şema / rol / seed
-src/Halka.Shared         ortak altyapı (sır dosyaları, backchannel, güvenlik başlıkları, log)
-tools/Halka.LocalInit    .local/ üretimi (CA, sertifikalar, sırlar, seed)
+src/Halka.Iam            identity provider (Razor Pages, protocol, sessions, MFA, administration)
+src/Halka.DemoClient     shared client library of Pano and Rapor (OIDC, server-side session)
+src/Halka.Pano, Rapor    demo clients
+src/Halka.WorkspaceApi   protected API
+src/Halka.MachineDemo    machine client
+src/Halka.Migrator       schema / roles / seed
+src/Halka.Shared         shared infrastructure (secret files, backchannel, security headers, logging)
+tools/Halka.LocalInit    creation of .local/ (CA, certificates, secrets, seed)
 tests/                   TestKit, UnitTests, IntegrationTests, E2E, Smoke
 deploy/                  Dockerfile, docker-compose.yml, .env.example
 scripts/                 local-stack, test, smoke, scan, verify, source-fingerprint
-docs/                    tasarım belgeleri, ADR'ler, doğrulama raporları
-design/preview.html      statik tasarım önizlemesi
+docs/                    design documents, ADRs, verification reports
+design/preview.html      static design preview
 ```
 
-## Belgeler
+## Documentation
 
-| Belge | İçerik |
+| Document | Contents |
 |---|---|
-| `docs/01`–`09` | Gereksinimler, protokol akışları, mimari, veritabanı, API/istemci sözleşmeleri, tehdit modeli, UI tasarımı, uygulama ve test planı |
-| `docs/adr/` | Mimari karar kayıtları |
-| `docs/security-verification.md` | Güvenlik kabul sözleşmesinin test eşlemesi |
-| `docs/revocation-matrix.md` | Hangi olay neyi iptal eder, ne kadar sürede, hangi testle kanıtlı |
-| `docs/final-verification.md` | Son doğrulama kapıları, komutlar, sayılar |
-| `docs/known-limitations.md` | Bilinçli kapsam dışı ve açık sınırlar |
-| `docs/portfolio-summary.md` | Kısa portföy özeti |
-| `THIRD-PARTY-NOTICES.md` | Üçüncü taraf bileşenler ve lisansları |
+| `docs/01`–`09` | Requirements, protocol flows, architecture, database, API/client contracts, threat model, UI design, implementation and test plan |
+| `docs/adr/` | Architecture decision records |
+| `docs/security-verification.md` | Test mapping of the security acceptance contract |
+| `docs/revocation-matrix.md` | Which event revokes what, how quickly, and which test proves it |
+| `docs/final-verification.md` | Final verification gates, commands, counts |
+| `docs/known-limitations.md` | Deliberate exclusions and open limitations |
+| `docs/portfolio-summary.md` | Short portfolio summary |
+| `THIRD-PARTY-NOTICES.md` | Third-party components and their licenses |
 
-## Lisans
+## License
 
-Kaynak kodun sahibi TCoderr'dir; bu depo için ayrı bir açık kaynak lisansı seçilmemiştir. Üçüncü taraf
-bileşenler kendi lisanslarına tabidir (`THIRD-PARTY-NOTICES.md`).
+The source code is owned by TCoderr; no separate open-source license has been chosen for this repository. Third-party
+components are subject to their own licenses (`THIRD-PARTY-NOTICES.md`).

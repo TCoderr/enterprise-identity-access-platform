@@ -67,5 +67,8 @@ jobs:
         project: [Halka.Iam, Halka.Migrator, Halka.Pano, Halka.Rapor, Halka.WorkspaceApi, Halka.MachineDemo]
     steps:
       - uses: actions/checkout@v4
+      # Docker repository names must be lowercase; the project name (and the PROJECT build arg) keeps its casing.
       - name: Build image
-        run: docker build -f deploy/Dockerfile --build-arg PROJECT=${{ matrix.project }} -t halka-ci-${{ matrix.project }} .
+        env:
+          PROJECT: ${{ matrix.project }}
+        run: docker build -f deploy/Dockerfile --build-arg "PROJECT=${PROJECT}" -t "halka-ci-${PROJECT,,}" .
