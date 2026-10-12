@@ -144,16 +144,17 @@ dotnet test --project tests/Halka.E2E -c Release --no-build
 Tests write only to disposable databases they create themselves (explicit permission + ownership marker + server
 identity check); they do not touch the development stack or another project's database.
 
-Remote CI: [GitHub Actions](https://github.com/TCoderr/enterprise-identity-access-platform/actions). As of 2026-10-12 (UTC+3), the first
-remote run (commit `a54c41a`) **failed** in the `images` (image build) job and fixes are in progress; no passing remote run is claimed
-here, and the Actions page shows the current state. Local results are not remote CI results.
+Remote CI: [run 38183758695](https://github.com/TCoderr/enterprise-identity-access-platform/actions/runs/38183758695) on commit `e7542a4`
+completed successfully (`build-and-test` and the six `images` jobs; checked 2026-10-12, UTC+3). The statement is tied to that commit: no
+result is claimed for later commits, including the one that adds this text. Current state:
+[GitHub Actions](https://github.com/TCoderr/enterprise-identity-access-platform/actions).
 
-The results and source fingerprints in `docs/final-verification.md` belong to the source state that was used during the local
-verification; the report was written before the repository was pushed, and its "remote CI was not run" statement describes that moment.
-The later translation of this README into English (`README.md` in English, the Turkish text in `README.tr.md`) is a documentation-only
-change. Even so, because the fingerprint script excludes only the `docs/` and `artifacts/` directories, these files are in scope and the
-fingerprint of the current tree is not the same as the recorded values. The tests were not re-run after the translation; the recorded
-results are not results obtained on the current fingerprint.
+The results and source fingerprints in `docs/final-verification.md` are local results and belong to the source state that was used during
+that verification, before the repository was pushed (its "remote CI was not run" statement describes that moment). Commit `e7542a4` came
+later: it added the English translation of this README (Turkish text in `README.tr.md`) and changed the Docker image names in
+`.github/workflows/ci.yml`; application code did not change. No local re-run of the tests is on record for that commit, and because the
+fingerprint script excludes only `docs/` and `artifacts/`, the fingerprint of the current tree is not one of the recorded values. The
+recorded results are therefore not results for the current fingerprint; the change is covered by the remote run above.
 
 ## Repository structure
 

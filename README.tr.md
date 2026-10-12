@@ -144,15 +144,17 @@ dotnet test --project tests/Halka.E2E -c Release --no-build
 Testler yalnız kendi oluşturdukları atılabilir veritabanlarına yazar (açık izin + sahiplik işareti + sunucu
 kimliği kontrolü); geliştirme yığınına veya başka bir projenin veritabanına dokunmaz.
 
-Uzak CI: [GitHub Actions](https://github.com/TCoderr/enterprise-identity-access-platform/actions). 2026-10-12 (UTC+3) itibarıyla ilk uzak
-koşu (commit `a54c41a`) `images` (imaj derleme) işinde **başarısız** oldu ve düzeltmeler sürüyor; geçen bir uzak koşu iddia edilmez,
-güncel durum Actions sayfasındadır. Yerel sonuçlar uzak CI sonucu değildir.
+Uzak CI: `e7542a4` commit'i için [koşu 38183758695](https://github.com/TCoderr/enterprise-identity-access-platform/actions/runs/38183758695)
+başarıyla tamamlandı (`build-and-test` ve altı `images` işi; 2026-10-12, UTC+3 tarihinde kontrol edildi). Bu ifade yalnız o commit'e
+bağlıdır: bu metni ekleyen commit dahil sonraki commit'ler için bir sonuç iddia edilmez. Güncel durum:
+[GitHub Actions](https://github.com/TCoderr/enterprise-identity-access-platform/actions).
 
-`docs/final-verification.md` içindeki sonuçlar ve kaynak fingerprint'leri, yerel doğrulama sırasında kullanılan kaynak durumuna aittir;
-rapor depo push edilmeden önce yazılmıştır ve içindeki "uzak CI koşulmadı" ifadesi o ana aittir. README'nin sonradan İngilizceye
-çevrilmesi (`README.md` İngilizce, Türkçe metin `README.tr.md`) yalnız belge değişikliğidir. Yine de fingerprint betiği yalnız `docs/` ve
-`artifacts/` dizinlerini hariç tuttuğundan bu dosyalar kapsama girer ve güncel ağacın fingerprint'i kayıtlı değerlerle aynı değildir.
-Testler çeviriden sonra yeniden koşulmamıştır; kayıtlı sonuçlar güncel fingerprint üzerinde alınmış sonuçlar değildir.
+`docs/final-verification.md` içindeki sonuçlar ve kaynak fingerprint'leri yerel sonuçlardır; depo push edilmeden önce, o doğrulama
+sırasında kullanılan kaynak durumuna aittir (rapordaki "uzak CI koşulmadı" ifadesi o ana aittir). `e7542a4` commit'i bundan sonradır: bu
+README'nin İngilizce çevirisini ekledi (Türkçe metin `README.tr.md`) ve `.github/workflows/ci.yml` içindeki Docker imaj adlarını
+değiştirdi; uygulama kodu değişmedi. Bu commit için yerel testlerin yeniden koşulduğuna dair bir kayıt yoktur ve fingerprint betiği yalnız
+`docs/` ile `artifacts/` dizinlerini hariç tuttuğundan güncel ağacın fingerprint'i kayıtlı değerlerden biri değildir. Bu nedenle kayıtlı
+sonuçlar güncel fingerprint'in sonuçları değildir; değişiklik yukarıdaki uzak koşuyla kapsanır.
 
 ## Depo yapısı
 
